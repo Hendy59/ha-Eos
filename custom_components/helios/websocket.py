@@ -49,7 +49,7 @@ async def ws_connect(hass: HomeAssistant, connection, msg: dict) -> None:
     data = hass.data[DOMAIN]
     installation_id = msg["installation_id"]
     if msg["protocol"] not in PROTOCOLS:
-        connection.send_error(msg["id"], "unsupported_protocol", f"Helios speaks protocol {PROTOCOL}")
+        connection.send_error(msg["id"], "unsupported_protocol", f"EOS speaks protocol {PROTOCOL}")
         return
 
     def owned():
@@ -111,7 +111,7 @@ async def ws_connect(hass: HomeAssistant, connection, msg: dict) -> None:
         connection.send_error(msg["id"], "unauthorized", "This device has been paired again")
         return
     if coordinator is None or data["entries"].get(entry.entry_id) is not coordinator:
-        connection.send_error(msg["id"], "not_ready", "The Helios integration is still loading")
+        connection.send_error(msg["id"], "not_ready", "The EOS integration is still loading")
         return
     sub_id = msg["id"]
     coordinator.attach(connection, sub_id)

@@ -22,7 +22,7 @@ async def async_register_panel(hass: HomeAssistant) -> None:
     frontend.async_register_built_in_panel(
         hass,
         component_name="custom",
-        sidebar_title="Helios",
+        sidebar_title="EOS",
         sidebar_icon="mdi:clock-digital",
         frontend_url_path=PANEL_URL_PATH,
         require_admin=True,

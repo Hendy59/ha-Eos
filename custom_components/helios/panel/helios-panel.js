@@ -99,12 +99,12 @@ class HeliosPanel extends HTMLElement {
       const list = await this._hass.callWS({ type: 'lovelace/dashboards/list' });
       const urlPath = S.dashboardPath(clock.name, list.map((d) => d.url_path));
       const source = await this._fetch(st.urlPath, true); // fresh from HA, never the editor's model
-      await this._hass.callWS({ type: 'lovelace/dashboards/create', url_path: urlPath, title: `Helios - ${clock.name}`, icon: 'mdi:clock-digital', show_in_sidebar: false, require_admin: true, mode: 'storage' });
+      await this._hass.callWS({ type: 'lovelace/dashboards/create', url_path: urlPath, title: `EOS - ${clock.name}`, icon: 'mdi:clock-digital', show_in_sidebar: false, require_admin: true, mode: 'storage' });
       await this._hass.callWS({ type: 'lovelace/config/save', url_path: urlPath, config: structuredClone(source) });
       await this._hass.callWS({ type: 'helios/clock/set_dashboard', entry_id: clock.entry_id, dashboard_path: urlPath });
       // HA acknowledged the switch: from here the editor targets the new document whatever the refreshes below do
       clock.dashboard_path = urlPath; st.urlPath = urlPath;
-      if (!st.dashboards.some((d) => d.url_path === urlPath)) st.dashboards.push({ url_path: urlPath, title: `Helios - ${clock.name}`, mode: 'storage' });
+      if (!st.dashboards.some((d) => d.url_path === urlPath)) st.dashboards.push({ url_path: urlPath, title: `EOS - ${clock.name}`, mode: 'storage' });
       await this._loadDashboard();
       st.notice = st.model ? this._text('ownDashboardCreated', { name: clock.name, path: urlPath }) : this._text('ownDashboardLoadFailed', { name: clock.name, path: urlPath });
     } catch (err) { st.notice = this._text('ownDashboardFailed', { error: err.message || err.code || err }); }
@@ -134,7 +134,7 @@ class HeliosPanel extends HTMLElement {
   async _createDashboard() {
     const st = this.state;
     try {
-      await this._hass.callWS({ type: 'lovelace/dashboards/create', url_path: st.urlPath, title: 'Helios', icon: 'mdi:clock-digital', show_in_sidebar: true, require_admin: true, mode: 'storage' });
+      await this._hass.callWS({ type: 'lovelace/dashboards/create', url_path: st.urlPath, title: 'EOS', icon: 'mdi:clock-digital', show_in_sidebar: true, require_admin: true, mode: 'storage' });
       st.dashboards = (await this._hass.callWS({ type: 'lovelace/dashboards/list' })).filter((d) => d.mode === 'storage');
       await this._loadDashboard();
     } catch (err) { st.notice = this._text('dashboardCreateFailed', { error: err.message || err.code || err }); this._render(); }

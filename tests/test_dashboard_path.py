@@ -13,7 +13,7 @@ BEDROOM, OFFICE = "0f3c1b2a-9d8e-4c7b-a6f5-1e2d3c4b5a69", "1a2b3c4d-5e6f-4a7b-8c
 async def paired(hass, installation, **extra):
     user_id, token = await identity.async_create_identity(hass, installation)
     entry = MockConfigEntry(
-        domain=DOMAIN, unique_id=installation, title=f"Helios {installation[:8]}",
+        domain=DOMAIN, unique_id=installation, title=f"EOS {installation[:8]}",
         data={"installation_id": installation, "user_id": user_id, "app_version": "0.13.0", "version_code": 33, "music_assistant": None, **extra},
         options={"diagnostics_url": "http://diag.local/x"},
     )
@@ -87,6 +87,6 @@ async def test_clocks_lists_device_names_areas_and_paths(hass, hass_ws_client):
     await admin.send_json({"id": 1, "type": "helios/clocks"})
     clocks = (await admin.receive_json())["result"]["clocks"]
     assert clocks == [
-        {"entry_id": bedroom.entry_id, "name": "Helios 0f3c1b2a", "area": None, "dashboard_path": "helios-clock", "online": False},
+        {"entry_id": bedroom.entry_id, "name": "EOS 0f3c1b2a", "area": None, "dashboard_path": "helios-clock", "online": False},
         {"entry_id": office.entry_id, "name": "zegar gabinet", "area": "Biuro", "dashboard_path": "helios-gabinet", "online": True},
     ]

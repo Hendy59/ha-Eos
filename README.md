@@ -1,6 +1,6 @@
-# Helios - Home Assistant integration for the Lenovo Smart Clock 2
+# EOS - Home Assistant integration for the Lenovo Smart Clock 2
 
-Home Assistant side of [Helios](https://github.com/SychPL/helios), an Android
+Home Assistant side of [EOS](https://github.com/SychPL/helios), an Android
 app that turns a Lenovo Smart Clock 2 into a Home Assistant dashboard and voice
 satellite. The clock connects to Home Assistant over its own WebSocket
 connection; this integration registers the device and its entities, pairs the
@@ -12,7 +12,7 @@ No pip dependencies, push only (`iot_class: local_push`).
 
 | Entity | Source on the clock |
 | --- | --- |
-| `sensor` App version (diagnostic) | the Helios APK version |
+| `sensor` App version (diagnostic) | the EOS APK version |
 | `sensor` Voice state | idle / listening / processing / responding / error |
 | `sensor` Dock version (diagnostic) | firmware of the charging dock |
 | `binary_sensor` Dock connected | the OEM dock listener |
@@ -29,10 +29,10 @@ passed to `assist_pipeline/run`).
 
 1. HACS -> Integrations -> three-dot menu -> **Custom repositories** -> add this
    repository's URL, category *Integration*.
-2. Install **Helios** and restart Home Assistant.
-3. On the clock (Helios 0.9.0 or newer): hold HELIOS -> **Paruj z HA** (Pair
+2. Install **EOS** and restart Home Assistant.
+3. On the clock (EOS 0.9.0 or newer): hold EOS -> **Paruj z HA** (Pair
    with HA) -> pick your Home Assistant from the mDNS list or type its address.
-4. Settings -> Devices and services -> **Add integration** -> Helios. Home
+4. Settings -> Devices and services -> **Add integration** -> EOS. Home
    Assistant shows a six-digit code valid for five minutes. Leave that dialog
    open - it is what finishes the pairing.
 5. On the clock tap **Dalej** (Next) and type the code. The clock receives its
@@ -90,7 +90,7 @@ described in **[docs/PROTOCOL.md](docs/PROTOCOL.md)**.
   while the first is in flight gets `busy`.
 - Music Assistant as an add-on authenticates Home Assistant as a system user,
   and Music Assistant refuses such tokens on its LAN web server. Paste a token
-  once in Settings -> Devices and services -> Helios -> Configure -> *Music
+  once in Settings -> Devices and services -> EOS -> Configure -> *Music
   Assistant token for the clock*. It is stored as given, never verified, never
   revoked, and changing it refreshes music on the clock's next connect.
   A clock paired later takes the token already pasted for another clock, so it
@@ -99,7 +99,7 @@ described in **[docs/PROTOCOL.md](docs/PROTOCOL.md)**.
 
 ## Clock appearance
 
-Settings -> Devices and services -> Helios -> the clock -> **Configure**: theme
+Settings -> Devices and services -> EOS -> the clock -> **Configure**: theme
 (warm graphite / night blue), background (theme colour, keep the current photo,
 or upload a new JPEG/PNG up to 10 MB), dimming 35-80 % and a focus point, plus
 the Sendspin, diagnostics and Music Assistant overrides.
@@ -112,7 +112,7 @@ serves only the current image and only to that clock's user or an administrator.
 
 ## Dashboard editor
 
-The sidebar entry **Helios** (administrators only) is a visual editor for the
+The sidebar entry **EOS** (administrators only) is a visual editor for the
 clock's layout: a 4x3 canvas, pages, one form per card. Click an empty cell to
 add a card, click a card to edit or delete it. Entity and icon pickers are Home
 Assistant's own (`ha-form`); if they fail to load the panel falls back to plain
@@ -126,22 +126,22 @@ into a new hidden dashboard (`helios-<clock name>`) and switches that clock to
 it on the spot, without a restart. The path is stored with the clock's config
 entry and sent to the app in the `connection` event.
 
-The card list includes **Energy (PV, house, battery)** (`energy`, Helios 0.14 or newer on the clock): PV
+The card list includes **Energy (PV, house, battery)** (`energy`, EOS 0.14 or newer on the clock): PV
 production and house load on top, the battery charge large under it; without a battery sensor the
 production / load pair is the value.
 
-**Thermostat** (`climate`, Helios 0.16 or newer): the measured temperature large, the setpoint under it; on the
+**Thermostat** (`climate`, EOS 0.16 or newer): the measured temperature large, the setpoint under it; on the
 clock a tap opens the full control panel (setpoint, mode, preset, fan, swing).
 
 **Readings (1–3 entities)** (`entities`): one to three ordered rows, each with an entity and an optional short
 label. Select the entities in the card's list editor; any HA entity domain is accepted. Numeric states use at most
 one decimal place and their HA units; a missing, unknown or unavailable value shows `—` without hiding the other
 rows. The card displays values only. Its title defaults to `Odczyty`, and its header icon to
-`mdi:format-list-bulleted`. Update the clock to Helios 0.19 or newer before saving this card; older clocks reject the
+`mdi:format-list-bulleted`. Update the clock to EOS 0.19 or newer before saving this card; older clocks reject the
 document and retain their previous layout. The dashboard schema stays at version 6. Drag list entries by their
 handles to change the display order.
 
-**Alerts** (`alerts`, Helios 0.17 or newer): every warning in one 1x1, 1x2 or 2x1 tile - the count and the newest
+**Alerts** (`alerts`, EOS 0.17 or newer): every warning in one 1x1, 1x2 or 2x1 tile - the count and the newest
 few; on the clock a tap slides in the full list with "active since" times and an optional "turn off lights" button.
 Each source is a text entity plus a condition (`when`); an optional stand-in card (`empty`: energy, climate, weather,
 clock or tile) takes the tile's place while everything is known and nothing applies.
@@ -151,7 +151,7 @@ It edits the `helios` section of a storage-mode dashboard through the frontend's
 dashboard is left untouched. Before saving it re-reads the dashboard and
 refuses to overwrite a version changed elsewhere in the meantime. A document in
 schema 2-5 loads as one page and is upgraded to schema 6 on the first save -
-that needs Helios 0.12 on the clock; an older clock rejects the new document
+that needs EOS 0.12 on the clock; an older clock rejects the new document
 and keeps its previous layout. The JavaScript is public (no secrets in it); the
 only mutation path is `lovelace/config/save`, which Home Assistant gates to
 administrators.

@@ -1,5 +1,5 @@
 {
   "type": "module",
   "private": true,
-  "description": "Helios dashboard editor panel - plain ES modules served by the integration; this file only tells node --check and node --test that they are modules"
+  "description": "EOS dashboard editor panel - plain ES modules served by the integration; this file only tells node --check and node --test that they are modules"
 }
