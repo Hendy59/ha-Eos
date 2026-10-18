@@ -57,13 +57,54 @@ class HeliosPanel extends HTMLElement {
   set panel(p) { this._cfg = (p && p.config) || {}; if (!this.state.urlPath) this.state.urlPath = this._cfg.dashboard_path || 'helios-clock'; }
   set hass(h) {
     this._hass = h;
-    this._t = createTranslator(h?.locale?.language || h?.language || 'en');
+    const language = h?.locale?.language || h?.locale || h?.language || navigator.language || 'en';
+    const previousLanguage = this._language;
+    this._language = String(language);
+    this._t = createTranslator(this._language);
     if (h && !this._loaded) { this._loaded = true; this._load(); }
     else if (h && this._form) this._form.hass = h;
     if (h && this._loaded && this.state.model) this._renderGrid(); // live state text on the preview
+    if (previousLanguage && previousLanguage !== this._language && this._loaded) this._render();
   }
   get hass() { return this._hass; }
-  _text(key, values) { return this._t(key, values); }
+  _text(key, values, fallback) { return this._t(key, values, fallback); }
+  _typeLabel(type, fallback) { return this._text(`type.${type}`, {}, fallback || type); }
+  _fieldLabel(name, fallback) { return this._text(`field.${name}`, {}, fallback || name); }
+  _localizePreview(preview, type) {
+    if (!preview || type !== 'alerts') return preview;
+    const result = { ...preview };
+    if (result.title === 'Uwagi') result.title = this._text('preview.alerts');
+    if (typeof result.value === 'string') {
+      result.value = result.value
+        .replaceAll('Brak danych', this._text('preview.noData'))
+        .replaceAll('Brak uwag', this._text('preview.noAlerts'))
+        .replaceAll('w tym miejscu', this._text('preview.here'));
+    }
+    return result;
+  }
+  _localizeSchema(schema) {
+    const localize = (node, prefix = '') => {
+      const copy = { ...node };
+      if (copy.name) {
+        const key = copy.name === 'entity' && copy.label === 'Moc z PV (sensor)' ? 'energy_entity' : (prefix ? `${prefix}.${copy.name}` : copy.name);
+        copy.label = this._fieldLabel(key, copy.label);
+      }
+      if (copy.type === 'grid') copy.schema = copy.schema.map((child) => localize(child, prefix));
+      if (copy.selector?.object?.fields) {
+        copy.selector = { ...copy.selector, object: { ...copy.selector.object, fields: Object.fromEntries(
+          Object.entries(copy.selector.object.fields).map(([name, child]) => [name, localize(child, `${copy.name || prefix}.${name}`)])
+        ) } };
+      }
+      if (copy.selector?.select?.options) {
+        copy.selector = { ...copy.selector, select: { ...copy.selector.select, options: copy.selector.select.options.map((option) => ({
+          ...option,
+          label: this._text(`action.${option.value}`, {}, option.label),
+        })) } };
+      }
+      return copy;
+    };
+    return schema.map((node) => localize(node));
+  }
   connectedCallback() { window.addEventListener('beforeunload', this._beforeUnload); this._render(); }
   disconnectedCallback() { window.removeEventListener('beforeunload', this._beforeUnload); if (this._unsub) { this._unsub(); this._unsub = null; } }
 
@@ -275,8 +316,8 @@ class HeliosPanel extends HTMLElement {
     const tabs = `<div class="tabs">${st.model.pages.map((p, n) => `<button class="${n === st.page ? 'on' : ''}" data-act="page" data-n="${n}">${esc(p.title || p.id)}</button>`).join('')}
       <button data-act="add-page" ${st.model.pages.length >= S.MAX_PAGES ? 'disabled' : ''}>${this._text('addPage')}</button><button data-act="rename-page">${this._text('renamePage')}</button><button data-act="delete-page" ${st.model.pages.length < 2 ? 'disabled' : ''}>${this._text('deletePage')}</button></div>`;
     root.innerHTML = `<style>${STYLE}</style>${bar}${notices}${tabs}
-      <div class="work"><div><div class="screen"><div class="top">HELIOS ${st.page === 0 ? '' : this._text('pageIndicator', { current: st.page + 1, total: st.model.pages.length })}</div><div class="grid" id="grid"></div></div>
-      <div class="row"><label class="muted">${this._text('newCard')} <select id="addtype">${Object.entries(S.TYPES).filter(([, d]) => !d.legacy).map(([k, d]) => `<option value="${k}" ${(this._addType || 'tile') === k ? 'selected' : ''}>${esc(d.label)}</option>`).join('')}</select> - ${this._text('clickEmptyCell')}</label></div><div id="errors">${this._errorsHtml()}</div></div>
+      <div class="work"><div><div class="screen"><div class="top">EOS ${st.page === 0 ? '' : this._text('pageIndicator', { current: st.page + 1, total: st.model.pages.length })}</div><div class="grid" id="grid"></div></div>
+      <div class="row"><label class="muted">${this._text('newCard')} <select id="addtype">${Object.entries(S.TYPES).filter(([, d]) => !d.legacy).map(([k, d]) => `<option value="${k}" ${(this._addType || 'tile') === k ? 'selected' : ''}>${esc(this._typeLabel(k, d.label))}</option>`).join('')}</select> - ${this._text('clickEmptyCell')}</label></div><div id="errors">${this._errorsHtml()}</div></div>
       <div class="side" id="side"></div></div>`;
     this._wire();
     this._renderGrid();
@@ -296,11 +337,11 @@ class HeliosPanel extends HTMLElement {
     for (let r = 1; r <= S.ROWS; r++) for (let c = 1; c <= S.COLUMNS; c++) if (!used.has(`${c},${r}`)) cells.push(`<button class="cell" data-act="cell" data-c="${c}" data-r="${r}" style="grid-column:${c};grid-row:${r}" title="${this._text('addCard')}">+</button>`);
     const cards = page.items.map((i) => {
       const def = S.TYPES[i.type], e = this._hass && i.entity ? this._hass.states[i.entity] : null;
-      const title = i.title || (e && e.attributes.friendly_name) || (def ? def.label.split(' ')[0] : i.type);
+      const title = i.title || (e && e.attributes.friendly_name) || (def ? this._typeLabel(i.type, def.label).split(' ')[0] : i.type);
       const icon = i.type === 'alerts' ? 'mdi:bell-alert' : i.icon ? (i.icon.startsWith('mdi:') ? i.icon : 'mdi:' + i.icon) : i.type === 'entities' ? 'mdi:format-list-bulleted' : (i.type === 'tile' ? S.DOMAIN_ICON[S.domainOf(i.entity)] : S.LEGACY_DEFAULT_ICON[i.type] ? 'mdi:' + S.LEGACY_DEFAULT_ICON[i.type] : null);
       const hs = (this._hass && this._hass.states) || {};
       const readings = i.type === 'entities' ? S.entitiesPreview(i, hs) : null;
-      const energy = i.type === 'energy' ? S.energyPreview(i, hs) : i.type === 'climate' ? S.climatePreview(i, hs) : i.type === 'alerts' ? S.alertsPreview(i, hs) : null;
+      const energy = this._localizePreview(i.type === 'energy' ? S.energyPreview(i, hs) : i.type === 'climate' ? S.climatePreview(i, hs) : i.type === 'alerts' ? S.alertsPreview(i, hs) : null, i.type);
       const value = energy ? energy.value : i.type === 'clock' ? '12:00' : i.type === 'music' ? '—' : i.type === 'cover_group' ? 'A / B' : e ? `${e.state}${e.attributes.unit_of_measurement ? ' ' + e.attributes.unit_of_measurement : ''}` : (i.entity || '');
       const body = readings ? `<div class="readings">${readings.rows.map((r) => `<div class="reading"><span class="label" title="${esc(r.title)}">${esc(r.title)}</span><span class="value" title="${esc(r.value)}">${esc(r.value)}</span></div>`).join('')}</div>` : `<div class="v">${esc(value)}</div>`;
       return `<div class="card ${i.id === st.sel ? 'on' : ''} ${bad.has(i.id) ? 'bad' : ''}" data-act="card" data-id="${esc(i.id)}" style="grid-column:${i.column} / span ${i.width};grid-row:${i.row} / span ${i.height}">
@@ -315,9 +356,9 @@ class HeliosPanel extends HTMLElement {
     this._form = null;
     if (!item) { side.innerHTML = `<h3>${this._text('card')}</h3><p class="muted">${this._text('selectCardHint')}</p>`; return; }
     const def = S.TYPES[item.type] || { label: item.type, fields: [] };
-    side.innerHTML = `<h3>${def.label}</h3><div id="form"></div>
+    side.innerHTML = `<h3>${this._typeLabel(item.type, def.label)}</h3><div id="form"></div>
       <div class="row">${def.legacy && S.toTile(item) ? `<button data-act="convert">${this._text('convertToTile')}</button>` : ''}<button data-act="delete">${this._text('delete')}</button><button data-act="close">${this._text('close')}</button></div>`;
-    const host = side.querySelector('#form'), schema = S.schemaFor(item.type, item, st.legacyVersion), data = S.toForm(item);
+    const host = side.querySelector('#form'), schema = this._localizeSchema(S.schemaFor(item.type, item, st.legacyVersion)), data = S.toForm(item);
     // The form outlives single edits, so every commit reads the item as it is now (renamed, converted), never the one it was built for.
     const commit = (value) => {
       const current = this._page().items.find((i) => i.id === st.sel);
@@ -330,13 +371,13 @@ class HeliosPanel extends HTMLElement {
       Object.assign(data, value);
       this._commit(next);
       if (domainChanged || entriesSchemaChanged) {
-        if (this._form) { this._form.schema = S.schemaFor(next.type, next, st.legacyVersion); this._form.data = data; } // the same object the commits mutate: a copy would freeze later edits at this moment
+        if (this._form) { this._form.schema = this._localizeSchema(S.schemaFor(next.type, next, st.legacyVersion)); this._form.data = data; } // the same object the commits mutate: a copy would freeze later edits at this moment
         else this._renderSide();
       }
     };
     if (st.formsReady && customElements.get('ha-form')) {
       const f = document.createElement('ha-form');
-      f.hass = this._hass; f.schema = schema; f.data = data; f.computeLabel = (s) => s.label || S.LABELS[s.name] || s.name;
+      f.hass = this._hass; f.schema = schema; f.data = data; f.computeLabel = (s) => s.label || this._fieldLabel(s.name, S.LABELS[s.name] || s.name);
       f.addEventListener('value-changed', (e) => { e.stopPropagation(); commit(e.detail.value); });
       host.appendChild(f); this._form = f;
     } else host.appendChild(fallbackForm(schema, data, this._hass, commit));

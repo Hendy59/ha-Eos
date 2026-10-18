@@ -15,3 +15,11 @@ test('formats translated messages and falls back by language family', () => {
 test('uses the key when a message is not defined', () => {
   assert.equal(createTranslator('de')('missing.key'), 'missing.key');
 });
+
+test('translates card types, form fields and action options', () => {
+  const de = createTranslator('de');
+  assert.equal(de('type.energy'), 'Energie (PV, Haus, Batterie)');
+  assert.equal(de('field.confirm_enabled'), 'Vor Ausführung fragen');
+  assert.equal(de('action.turn_on'), 'Einschalten');
+  assert.equal(de('unknown.label', {}, 'Fallback'), 'Fallback');
+});
