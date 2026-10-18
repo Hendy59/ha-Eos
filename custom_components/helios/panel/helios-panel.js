@@ -2,7 +2,7 @@
 // one tab per paired clock (SPEC 0.16): each tab edits the dashboard that clock shows.
 // Vanilla ES module, no build step. The model, validation and forms live in helios-schema.js (node-testable).
 import * as S from './helios-schema.js';
-import { createTranslator } from './helios-i18n.js';
+import { createTranslator, localizeModelText } from './helios-i18n.js';
 
 const STYLE = `
 :host{display:block;padding:16px;font-family:var(--paper-font-body1_-_font-family,Roboto,sans-serif);color:var(--primary-text-color);box-sizing:border-box}
@@ -68,17 +68,20 @@ class HeliosPanel extends HTMLElement {
   }
   get hass() { return this._hass; }
   _text(key, values, fallback) { return this._t(key, values, fallback); }
+  _modelText(text) { return localizeModelText(this._language || 'en', text); }
   _typeLabel(type, fallback) { return this._text(`type.${type}`, {}, fallback || type); }
   _fieldLabel(name, fallback) { return this._text(`field.${name}`, {}, fallback || name); }
   _localizePreview(preview, type) {
-    if (!preview || type !== 'alerts') return preview;
+    if (!preview) return preview;
     const result = { ...preview };
-    if (result.title === 'Uwagi') result.title = this._text('preview.alerts');
+    result.title = this._modelText(result.title);
+    result.detail = this._modelText(result.detail);
     if (typeof result.value === 'string') {
-      result.value = result.value
+      result.value = this._modelText(result.value)
         .replaceAll('Brak danych', this._text('preview.noData'))
         .replaceAll('Brak uwag', this._text('preview.noAlerts'))
         .replaceAll('w tym miejscu', this._text('preview.here'));
+      for (const [name, def] of Object.entries(S.TYPES)) result.value = result.value.replaceAll(def.label, this._typeLabel(name, def.label));
     }
     return result;
   }
@@ -166,7 +169,7 @@ class HeliosPanel extends HTMLElement {
     if (st.urlPath !== urlPath) return; // the user moved on to another dashboard while this one loaded
     st.doc = doc;
     const parsed = S.fromLovelace(st.doc);
-    st.model = parsed.model; st.legacyVersion = parsed.legacyVersion; st.notice = parsed.notice;
+    st.model = parsed.model; st.legacyVersion = parsed.legacyVersion; st.notice = this._modelText(parsed.notice);
     st.baseline = JSON.stringify(st.doc.helios ?? null);
     st.page = 0;
     this._validate();
@@ -282,7 +285,7 @@ class HeliosPanel extends HTMLElement {
   }
   _errorsHtml() {
     const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-    return this.state.errors.length ? `<ul class="err">${this.state.errors.map((e) => `<li>${e.page != null ? `strona ${e.page + 1}${e.id ? ` / ${esc(e.id)}` : ''}: ` : ''}${esc(e.msg)}</li>`).join('')}</ul>` : '';
+    return this.state.errors.length ? `<ul class="err">${this.state.errors.map((e) => `<li>${e.page != null ? `${this._text('pageLabel', { number: e.page + 1 })}${e.id ? ` / ${esc(e.id)}` : ''}: ` : ''}${esc(this._modelText(e.msg))}</li>`).join('')}</ul>` : '';
   }
   _renderStatus() {
     const st = this.state, root = this.shadowRoot, errors = root.getElementById('errors'), save = root.getElementById('save'), dirty = root.getElementById('dirty');

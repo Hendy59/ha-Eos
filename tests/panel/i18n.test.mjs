@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createTranslator, supportedLanguages } from '../../custom_components/helios/panel/helios-i18n.js';
+import { createTranslator, localizeModelText, supportedLanguages } from '../../custom_components/helios/panel/helios-i18n.js';
 
 test('provides the supported panel languages', () => {
   assert.deepEqual(supportedLanguages, ['en', 'de', 'pl']);
@@ -22,4 +22,11 @@ test('translates card types, form fields and action options', () => {
   assert.equal(de('field.confirm_enabled'), 'Vor Ausführung fragen');
   assert.equal(de('action.turn_on'), 'Einschalten');
   assert.equal(de('unknown.label', {}, 'Fallback'), 'Fallback');
+});
+
+test('localizes schema notices, validation messages and preview states', () => {
+  assert.equal(localizeModelText('de-DE', 'Nieprawidłowa encja sensor.room'), 'Ungültige Entität sensor.room');
+  assert.equal(localizeModelText('de', 'Element card-1 wymaga encji z domeny sensor'), 'Element card-1 benötigt eine Entität aus der Domäne sensor');
+  assert.equal(localizeModelText('en', 'Brak danych nie może oznaczać widoczności'), 'Unavailable data cannot be used for visibility');
+  assert.equal(localizeModelText('pl', 'Otwieranie…'), 'Otwieranie…');
 });
