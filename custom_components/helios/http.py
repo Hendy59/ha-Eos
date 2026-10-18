@@ -49,7 +49,7 @@ def async_register_views(hass: HomeAssistant) -> None:
 
 
 class HeliosPanelFileView(HomeAssistantView):
-    """The editor panel's two modules, served like any HA frontend asset (no auth: the browser loads them before it has a token).
+    """The editor panel's modules, served like any HA frontend asset (no auth: the browser loads them before it has a token).
 
     A view rather than a static path: static paths are refused once aiohttp has frozen the router (the test harness on Linux
     does that after the first client), and a view is what the pairing endpoint already relies on. No cache headers, because
@@ -59,7 +59,7 @@ class HeliosPanelFileView(HomeAssistantView):
     url = f"{PANEL_STATIC_URL}/{{name}}"
     name = "api:helios:panel"
     requires_auth = False
-    FILES = ("helios-panel.js", "helios-schema.js")
+    FILES = ("helios-panel.js", "helios-schema.js", "helios-i18n.js")
 
     async def get(self, request: web.Request, name: str) -> web.StreamResponse:
         if name not in self.FILES:
