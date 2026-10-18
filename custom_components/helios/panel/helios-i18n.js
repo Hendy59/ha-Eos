@@ -92,6 +92,7 @@ const MESSAGES = {
     renamePage: 'Rename',
     deletePage: 'Delete page',
     pageIndicator: '· page {current} of {total} (swipe on the clock)',
+    pageLabel: 'page {number}',
     newCard: 'New card:',
     clickEmptyCell: 'click an empty cell',
     addCard: 'Add card',
@@ -212,6 +213,7 @@ const MESSAGES = {
     renamePage: 'Umbenennen',
     deletePage: 'Seite löschen',
     pageIndicator: '· Seite {current} von {total} (auf der Uhr wischen)',
+    pageLabel: 'Seite {number}',
     newCard: 'Neue Karte:',
     clickEmptyCell: 'leere Zelle anklicken',
     addCard: 'Karte hinzufügen',
@@ -332,6 +334,7 @@ const MESSAGES = {
     renamePage: 'nazwa',
     deletePage: 'usuń stronę',
     pageIndicator: '· strona {current} z {total} (na zegarze: przesuń palcem)',
+    pageLabel: 'strona {number}',
     newCard: 'Nowa karta:',
     clickEmptyCell: 'kliknij pustą komórkę',
     addCard: 'Dodaj kartę',
@@ -364,6 +367,160 @@ const MESSAGES = {
   },
 };
 
+const MODEL_TEXT = {
+  en: {
+    'Uwagi': 'Alerts',
+    'Brak danych': 'No data',
+    'Brak uwag': 'No alerts',
+    'w tym miejscu': 'here',
+    'Brak połączenia': 'No connection',
+    'Wyłączony': 'Off',
+    'Zadana {temperature}': 'Target {temperature}',
+    'Odczyty': 'Readings',
+    'Otwarta': 'Open',
+    'Zamknięta': 'Closed',
+    'Otwieranie…': 'Opening…',
+    'Zamykanie…': 'Closing…',
+    'Zamknięty': 'Locked',
+    'Otwarty': 'Unlocked',
+    'Zablokowany': 'Jammed',
+    'Włączone': 'On',
+    'Wyłączone': 'Off',
+    'Wykryto': 'Detected',
+    'Brak': 'No',
+    'Nieprawidłowa encja {field}': 'Invalid entity {field}',
+    'Brak danych nie może oznaczać {meaning}': 'Unavailable data cannot be used for {meaning}',
+    'Ten pulpit nie ma jeszcze sekcji helios - zapis ją utworzy.': 'This dashboard has no helios section yet - saving will create it.',
+    'Nieznana wersja sekcji helios ({version}) - edytuj ręcznie.': 'Unknown helios section version ({version}) - edit it manually.',
+    'Wymagane pole {field}': 'Required field {field}',
+    'Nieprawidłowe pole {field}': 'Invalid field {field}',
+    'Powtórzony id: {id}': 'Duplicate id: {id}',
+    'Nieprawidłowy id: {id}': 'Invalid id: {id}',
+    'Powtórzony id strony: {id}': 'Duplicate page id: {id}',
+    'Nieprawidłowy id strony: {id}': 'Invalid page id: {id}',
+    'Nieprawidłowe pole title': 'Invalid title field',
+    'Element {id} wychodzi poza siatkę': 'Element {id} is outside the grid',
+    'Element {id} nakłada się na inny element': 'Element {id} overlaps another element',
+    'Pole niedozwolone dla typu {type}: {field}': 'Field {field} is not allowed for type {type}',
+    'Element {id} wymaga encji z domeny {domain}': 'Element {id} requires an entity from the {domain} domain',
+    'Nieznana ikona: {icon}': 'Unknown icon: {icon}',
+    'Encja {entity} nie obsługuje akcji {action}': 'Entity {entity} does not support action {action}',
+    'Akcja {action} wymaga potwierdzenia': 'Action {action} requires confirmation',
+    'Nieznany typ elementu: {type}': 'Unsupported element type: {type}',
+    'Wymagane pole pages': 'Required field pages',
+    'pages: najwyżej {count} stron': 'pages: at most {count} pages',
+    'items: najwyżej {count} elementów': 'items: at most {count} elements',
+    'Dozwolony jest jeden kafelek {type}': 'Only one {type} card is allowed',
+    'Pole {field} musi być liczbą od 1 do {max}': 'Field {field} must be a number from 1 to {max}',
+    '{field} wymaga encji {domain}': '{field} requires an entity from the {domain} domain',
+    '{field} wymaga encji z domeny {domain}': '{field} requires an entity from the {domain} domain',
+    '{field} wymaga encji sensor': '{field} requires a sensor entity',
+    'weather: forecast_entity i forecast_when występują razem': 'weather: forecast_entity and forecast_when must be provided together',
+    '{field} musi być obiektem': '{field} must be an object',
+    'Nieznane pole {field}: {name}': 'Unknown field {field}: {name}',
+    'Nieznane pole {field}': 'Unknown field {field}',
+    'Brak danych nie może oznaczać {meaning}': 'Unavailable data cannot be used for {meaning}',
+    'Nieznana wersja sekcji helios ({version}) - edytuj ręcznie.': 'Unknown helios section version ({version}) - edit it manually.',
+    'Kafelek alerts ma rozmiar 1x1, 1x2 albo 2x1': 'The alerts card must be 1x1, 1x2, or 2x1',
+    'alerts wymaga od 1 do {count} pozycji sources': 'alerts requires 1 to {count} sources entries',
+    'entities wymaga od 1 do 3 pozycji entries': 'entities requires 1 to 3 entries',
+    'sources: pozycja musi być obiektem': 'sources: entry must be an object',
+    'sources: powtórzony warunek {condition}': 'sources: duplicate condition {condition}',
+    'sources: off_entity i done_entity wykluczają się': 'sources: off_entity and done_entity are mutually exclusive',
+    'empty musi być obiektem': 'empty must be an object',
+    'empty: dozwolone typy {types}': 'empty: allowed types are {types}',
+    'empty: pole {field} bierze się z kafelka alerts': 'empty: field {field} comes from the alerts card',
+    'Sekcja helios przekracza 64 KiB': 'The helios section exceeds 64 KiB',
+  },
+  de: {
+    'Uwagi': 'Warnungen',
+    'Brak danych': 'Keine Daten',
+    'Brak uwag': 'Keine Warnungen',
+    'w tym miejscu': 'hier',
+    'Brak połączenia': 'Keine Verbindung',
+    'Wyłączony': 'Aus',
+    'Zadana {temperature}': 'Sollwert {temperature}',
+    'Odczyty': 'Messwerte',
+    'Otwarta': 'Offen',
+    'Zamknięta': 'Geschlossen',
+    'Otwieranie…': 'Wird geöffnet…',
+    'Zamykanie…': 'Wird geschlossen…',
+    'Zamknięty': 'Verriegelt',
+    'Otwarty': 'Entriegelt',
+    'Zablokowany': 'Blockiert',
+    'Włączone': 'Ein',
+    'Wyłączone': 'Aus',
+    'Wykryto': 'Erkannt',
+    'Brak': 'Nein',
+    'Nieprawidłowa encja {field}': 'Ungültige Entität {field}',
+    'Brak danych nie może oznaczać {meaning}': 'Nicht verfügbare Daten dürfen nicht für {meaning} verwendet werden',
+    'Ten pulpit nie ma jeszcze sekcji helios - zapis ją utworzy.': 'Dieses Dashboard hat noch keinen Helios-Abschnitt – beim Speichern wird er erstellt.',
+    'Nieznana wersja sekcji helios ({version}) - edytuj ręcznie.': 'Unbekannte Version des Helios-Abschnitts ({version}) – bitte manuell bearbeiten.',
+    'Wymagane pole {field}': 'Pflichtfeld {field}',
+    'Nieprawidłowe pole {field}': 'Ungültiges Feld {field}',
+    'Powtórzony id: {id}': 'Doppelte ID: {id}',
+    'Nieprawidłowy id: {id}': 'Ungültige ID: {id}',
+    'Powtórzony id strony: {id}': 'Doppelte Seiten-ID: {id}',
+    'Nieprawidłowy id strony: {id}': 'Ungültige Seiten-ID: {id}',
+    'Nieprawidłowe pole title': 'Ungültiges Titelfeld',
+    'Element {id} wychodzi poza siatkę': 'Element {id} liegt außerhalb des Rasters',
+    'Element {id} nakłada się na inny element': 'Element {id} überschneidet sich mit einem anderen Element',
+    'Pole niedozwolone dla typu {type}: {field}': 'Feld {field} ist für den Typ {type} nicht erlaubt',
+    'Element {id} wymaga encji z domeny {domain}': 'Element {id} benötigt eine Entität aus der Domäne {domain}',
+    'Nieznana ikona: {icon}': 'Unbekanntes Symbol: {icon}',
+    'Encja {entity} nie obsługuje akcji {action}': 'Entität {entity} unterstützt die Aktion {action} nicht',
+    'Akcja {action} wymaga potwierdzenia': 'Die Aktion {action} erfordert eine Bestätigung',
+    'Nieznany typ elementu: {type}': 'Nicht unterstützter Elementtyp: {type}',
+    'Wymagane pole pages': 'Pflichtfeld pages',
+    'pages: najwyżej {count} stron': 'pages: höchstens {count} Seiten',
+    'items: najwyżej {count} elementów': 'items: höchstens {count} Elemente',
+    'Dozwolony jest jeden kafelek {type}': 'Nur eine {type}-Karte ist zulässig',
+    'Pole {field} musi być liczbą od 1 do {max}': 'Feld {field} muss eine Zahl von 1 bis {max} sein',
+    '{field} wymaga encji {domain}': '{field} benötigt eine Entität aus der Domäne {domain}',
+    '{field} wymaga encji z domeny {domain}': '{field} benötigt eine Entität aus der Domäne {domain}',
+    '{field} wymaga encji sensor': '{field} benötigt eine Sensor-Entität',
+    'weather: forecast_entity i forecast_when występują razem': 'weather: forecast_entity und forecast_when müssen gemeinsam angegeben werden',
+    '{field} musi być obiektem': '{field} muss ein Objekt sein',
+    'Nieznane pole {field}: {name}': 'Unbekanntes Feld {field}: {name}',
+    'Nieznane pole {field}': 'Unbekanntes Feld {field}',
+    'Brak danych nie może oznaczać {meaning}': 'Nicht verfügbare Daten dürfen nicht für {meaning} verwendet werden',
+    'Kafelek alerts ma rozmiar 1x1, 1x2 albo 2x1': 'Die Warnkarten-Größe muss 1x1, 1x2 oder 2x1 sein',
+    'alerts wymaga od 1 do {count} pozycji sources': 'alerts benötigt 1 bis {count} sources-Einträge',
+    'entities wymaga od 1 do 3 pozycji entries': 'entities benötigt 1 bis 3 entries',
+    'sources: pozycja musi być obiektem': 'sources: Eintrag muss ein Objekt sein',
+    'sources: powtórzony warunek {condition}': 'sources: Bedingung {condition} ist doppelt',
+    'sources: off_entity i done_entity wykluczają się': 'sources: off_entity und done_entity schließen sich aus',
+    'empty musi być obiektem': 'empty muss ein Objekt sein',
+    'empty: dozwolone typy {types}': 'empty: zulässige Typen: {types}',
+    'empty: pole {field} bierze się z kafelka alerts': 'empty: Feld {field} wird aus der alerts-Karte übernommen',
+    'Sekcja helios przekracza 64 KiB': 'Der Helios-Abschnitt überschreitet 64 KiB',
+  },
+  pl: {},
+};
+
+const MODEL_PATTERNS = [
+  [/^Dokument w wersji (\d+)\. Zapis przekształci go do wersji 6 \(strony\)\. Wymaga EOS 0\.12; starszy zegar odrzuci dokument i zachowa poprzedni układ\.$/, 'legacyNotice'],
+  [/^Element (.+) wymaga encji z domeny (.+)$/, 'elementDomain'],
+  [/^Nieprawidłowa encja (.+)$/, 'invalidEntity'],
+  [/^Brak danych nie może oznaczać (.+)$/, 'unavailableMeaning'],
+  [/^(.+) wymaga encji z domeny (.+)$/, 'domainEntity'],
+  [/^(.+) wymaga encji (.+)$/, 'entityRequirement'],
+  [/^Nieznane pole ([^:]+): (.+)$/, 'unknownNestedField'],
+  [/^Nieznane pole ([^:]+)$/, 'unknownField'],
+  [/^([^ ]+) wymaga encji sensor$/, 'sensorEntity'],
+  [/^([^ ]+) wymaga encji z domeny light$/, 'lightEntity'],
+  [/^([^ ]+) wymaga encji z domeny cover$/, 'coverEntity'],
+  [/^([^ ]+) musi być boolean$/, 'booleanField'],
+  [/^(.+) wymaga dokładnie dwóch pozycji covers$/, 'twoItems'],
+  [/^covers: ta sama roleta dwa razy$/, 'sameCover'],
+  [/^([^ ]+) wymaga od 1 do (\d+) pozycji (.+)$/, 'rangeItems'],
+  [/^([^:]+): nieprawidłowa encja (.+)$/, 'invalidNestedEntity'],
+  [/^([^:]+): powtórzony warunek (.+)$/, 'duplicateCondition'],
+  [/^(.+) musi być obiektem$/, 'objectField'],
+  [/^(.+) wymaga potwierdzenia$/, 'confirmation'],
+  [/^Pole niedozwolone dla typu ([^:]+): (.+)$/, 'disallowedField'],
+];
+
 export function createTranslator(language = 'en') {
   const locale = String(language).toLowerCase().split(/[-_]/)[0];
   const messages = MESSAGES[locale] || MESSAGES.en;
@@ -372,6 +529,66 @@ export function createTranslator(language = 'en') {
     const resolved = template === key ? fallback : template;
     return resolved.replace(/\{(\w+)\}/g, (_match, name) => String(values[name] ?? `{${name}}`));
   };
+}
+
+export function localizeModelText(language, text) {
+  if (typeof text !== 'string') return text;
+  const locale = String(language).toLowerCase().split(/[-_]/)[0];
+  if (locale === 'pl') return text;
+  const messages = MODEL_TEXT[locale] || MODEL_TEXT.en;
+  const interpolate = (template, values) => template.replace(/\{(\w+)\}/g, (_match, name) => String(values[name] ?? `{${name}}`));
+  const exact = (key, values) => messages[key] ? interpolate(messages[key], values) : text;
+  if (text.startsWith('Dokument w wersji ')) {
+    const match = text.match(MODEL_PATTERNS[0][0]);
+    if (match) return locale === 'de'
+      ? `Dokument der Version ${match[1]} wird beim Speichern in Version 6 (Seiten) umgewandelt. EOS 0.12 ist erforderlich; ältere Uhren lehnen das Dokument ab und behalten ihr bisheriges Layout.`
+      : `Version-${match[1]} document will be converted to version 6 (pages) when saved. EOS 0.12 is required; older clocks will reject it and keep their previous layout.`;
+  }
+  for (const [pattern, key] of MODEL_PATTERNS.slice(1)) {
+    const match = text.match(pattern);
+    if (!match) continue;
+    const values = key === 'invalidEntity' ? { field: match[1] }
+      : key === 'domainEntity' || key === 'entityRequirement' ? { field: match[1], domain: match[2] }
+      : key === 'unknownNestedField' ? { field: match[1], name: match[2] }
+      : key === 'unknownField' ? { field: match[1] }
+      : key === 'sensorEntity' || key === 'lightEntity' || key === 'coverEntity' ? { field: match[1] }
+      : key === 'booleanField' || key === 'objectField' ? { field: match[1] }
+      : key === 'twoItems' ? { field: match[1] }
+      : key === 'rangeItems' ? { field: match[1], count: match[2], name: match[3] }
+      : key === 'invalidNestedEntity' ? { field: match[1], entity: match[2] }
+      : key === 'duplicateCondition' ? { condition: match[2] }
+      : key === 'unavailableMeaning' ? { meaning: ({ widoczności: locale === 'de' ? 'Sichtbarkeit' : 'visibility', ostrzeżenia: locale === 'de' ? 'Warnungen' : 'alerts', 'trybu prognozy': locale === 'de' ? 'Vorhersagemodus' : 'forecast mode' }[match[1]] || match[1]) }
+      : key === 'confirmation' ? { action: match[1] }
+      : key === 'disallowedField' ? { type: match[1], field: match[2] }
+      : key === 'elementDomain' ? { id: match[1], domain: match[2] }
+      : {};
+    const templateKey = key === 'invalidEntity' ? 'Nieprawidłowa encja {field}'
+      : key === 'domainEntity' ? '{field} wymaga encji z domeny {domain}'
+      : key === 'entityRequirement' ? '{field} wymaga encji {domain}'
+      : key === 'sensorEntity' ? '{field} wymaga encji sensor'
+      : key === 'lightEntity' || key === 'coverEntity' ? '{field} wymaga encji z domeny {domain}'
+      : key === 'booleanField' ? '{field} musi być boolean'
+      : key === 'twoItems' ? 'cover_group wymaga dokładnie dwóch pozycji covers'
+      : key === 'rangeItems' ? '{field} wymaga od 1 do {count} pozycji entries'
+      : key === 'invalidNestedEntity' ? '{field}: nieprawidłowa encja {entity}'
+      : key === 'duplicateCondition' ? 'sources: powtórzony warunek {condition}'
+      : key === 'unavailableMeaning' ? 'Brak danych nie może oznaczać {meaning}'
+      : key === 'objectField' ? '{field} musi być obiektem'
+      : key === 'confirmation' ? 'Akcja {action} wymaga potwierdzenia'
+      : key === 'disallowedField' ? 'Pole niedozwolone dla typu {type}: {field}'
+      : key === 'elementDomain' ? 'Element {id} wymaga encji z domeny {domain}'
+      : null;
+    if (templateKey) return exact(templateKey, values);
+  }
+  for (const key of Object.keys(messages)) {
+    const pattern = new RegExp('^' + key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\\\{(\w+)\\\}/g, '(.+)') + '$');
+    const match = text.match(pattern);
+    if (match) {
+      const names = [...key.matchAll(/\{(\w+)\}/g)].map((m) => m[1]);
+      return exact(key, Object.fromEntries(names.map((name, index) => [name, match[index + 1]])));
+    }
+  }
+  return text;
 }
 
 export const supportedLanguages = Object.freeze(Object.keys(MESSAGES));
