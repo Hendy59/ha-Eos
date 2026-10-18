@@ -49,7 +49,7 @@ def async_register_views(hass: HomeAssistant) -> None:
 
 
 class HeliosPanelFileView(HomeAssistantView):
-    """The editor panel's two modules, served like any HA frontend asset (no auth: the browser loads them before it has a token).
+    """The editor panel's modules, served like any HA frontend asset (no auth: the browser loads them before it has a token).
 
     A view rather than a static path: static paths are refused once aiohttp has frozen the router (the test harness on Linux
     does that after the first client), and a view is what the pairing endpoint already relies on. No cache headers, because
@@ -59,7 +59,7 @@ class HeliosPanelFileView(HomeAssistantView):
     url = f"{PANEL_STATIC_URL}/{{name}}"
     name = "api:helios:panel"
     requires_auth = False
-    FILES = ("helios-panel.js", "helios-schema.js")
+    FILES = ("helios-panel.js", "helios-schema.js", "helios-i18n.js")
 
     async def get(self, request: web.Request, name: str) -> web.StreamResponse:
         if name not in self.FILES:
@@ -121,7 +121,7 @@ class HeliosPairView(HomeAssistantView):
             return self.json({"error": "invalid_request"}, status_code=400)
         registry = data["pairing"]
         if registry.blocked(source):
-            _LOGGER.warning("Helios: refused pairing from %s", source)
+            _LOGGER.warning("EOS: refused pairing from %s", source)
             return self.json({"error": "unauthorized"}, status_code=401)
         installation_id = parsed["installation_id"]
         if installation_id in data["pairing_active"]:
@@ -132,7 +132,7 @@ class HeliosPairView(HomeAssistantView):
             async with lock:
                 pending = registry.claim(parsed["code"], source)
                 if pending is None:
-                    _LOGGER.warning("Helios: refused pairing from %s", source)
+                    _LOGGER.warning("EOS: refused pairing from %s", source)
                     return self.json({"error": "unauthorized"}, status_code=401)
                 pending["existing"] = _entry_for(hass, installation_id)  # read under the lock: a re-pair in flight cannot slip in between
                 try:
@@ -142,7 +142,7 @@ class HeliosPairView(HomeAssistantView):
                     return self.json({"error": err.error}, status_code=err.status)
                 except TimeoutError:
                     return self.json({"error": "not_ready"}, status_code=503)
-            _LOGGER.info("Helios %s paired from %s", installation_id[:8], source)
+            _LOGGER.info("EOS %s paired from %s", installation_id[:8], source)
             return self.json({"protocol": PROTOCOL, "token": token, "pipeline": pipeline, "dashboard_path": DASHBOARD_PATH})
         finally:
             data["pairing_active"].discard(installation_id)
@@ -203,7 +203,7 @@ async def _pair(hass: HomeAssistant, data: dict, pending: dict, parsed: dict) ->
                     except TimeoutError:
                         restored = False
                     if not restored:
-                        _LOGGER.error("Helios %s: restoring the previous entry failed", installation_id[:8])
+                        _LOGGER.error("EOS %s: restoring the previous entry failed", installation_id[:8])
             if not ok:
                 raise PairingFailed(503, "not_ready")
             if not pending["future"].done():
@@ -232,7 +232,7 @@ async def _pair(hass: HomeAssistant, data: dict, pending: dict, parsed: dict) ->
         await _rollback(hass, data, pending, user_id, music, existing is None)
         if isinstance(err, TimeoutError | asyncio.CancelledError | SystemExit | KeyboardInterrupt):
             raise  # a shutdown or a cancel is not a pairing error and must not be swallowed
-        _LOGGER.warning("Helios %s: pairing failed: %s", installation_id[:8], type(err).__name__)
+        _LOGGER.warning("EOS %s: pairing failed: %s", installation_id[:8], type(err).__name__)
         raise PairingFailed(503, "not_ready") from err
     # commit point: the new entry is loaded, nothing below may fail the request
     hass.async_create_task(_retire(hass, previous_user if previous_user != user_id else None, previous_music))
@@ -274,11 +274,11 @@ async def _rollback(hass: HomeAssistant, data: dict, pending: dict, user_id: str
             # the removals are idempotent, so async_remove_entry's own cleanup running alongside is harmless
             results = await asyncio.gather(*steps, return_exceptions=True)
     except TimeoutError:
-        _LOGGER.error("Helios: cleaning up a failed pairing took longer than %s s", ROLLBACK_TIMEOUT_SECONDS)
+        _LOGGER.error("EOS: cleaning up a failed pairing took longer than %s s", ROLLBACK_TIMEOUT_SECONDS)
         return
     for name, result in zip(names, results, strict=True):
         if isinstance(result, BaseException):
-            _LOGGER.warning("Helios: cleaning up a failed pairing (%s): %s", name, type(result).__name__)
+            _LOGGER.warning("EOS: cleaning up a failed pairing (%s): %s", name, type(result).__name__)
 
 
 async def _retire(hass: HomeAssistant, user_id: str | None, music: dict | None) -> None:

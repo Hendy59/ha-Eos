@@ -1,12 +1,12 @@
-# Helios - integracja Home Assistant dla Lenovo Smart Clock 2
+# EOS - integracja Home Assistant dla Lenovo Smart Clock 2
 
-Integracja dla zegara z aplikacją [Helios](https://github.com/SychPL/helios) (Lenovo Smart Clock 2 jako dashboard i satelita głosowy Home Assistant). Zegar łączy się z HA własnym gniazdem WebSocket; ta integracja rejestruje urządzenie i encje po stronie HA. Bez zależności pip, wyłącznie push (`iot_class: local_push`).
+Integracja dla zegara z aplikacją [EOS](https://github.com/SychPL/helios) (Lenovo Smart Clock 2 jako dashboard i satelita głosowy Home Assistant). Zegar łączy się z HA własnym gniazdem WebSocket; ta integracja rejestruje urządzenie i encje po stronie HA. Bez zależności pip, wyłącznie push (`iot_class: local_push`).
 
 ## Co daje
 
 | Encja | Źródło |
 | --- | --- |
-| `sensor` Wersja aplikacji (diagnostyczny) | wersja APK Heliosa |
+| `sensor` Wersja aplikacji (diagnostyczny) | wersja APK EOS |
 | `sensor` Stan głosu | idle / listening / processing / responding / error |
 | `sensor` Wersja docka (diagnostyczny) | firmware docka ładującego |
 | `binary_sensor` Dock podłączony | listener OEM docka |
@@ -15,18 +15,18 @@ Integracja dla zegara z aplikacją [Helios](https://github.com/SychPL/helios) (L
 | `number` Głośność urządzenia | `STREAM_MUSIC` 0-100 %, odczyt co 3 s |
 | `media_player` Głośnik zegara | ta sama głośność urządzenia jako odtwarzacz (tylko `volume_set`/`volume_step`), żeby Assist rozumiał "głośniej"/"ustaw głośność" w obszarze zegara; muzykę obsługuje osobny odtwarzacz Music Assistant |
 
-Urządzenie w rejestrze HA ma stały identyfikator instalacji Heliosa, więc obszar przypisany w HA daje kontekst pokoju dla poleceń głosowych (`device_id` w `assist_pipeline/run`).
+Urządzenie w rejestrze HA ma stały identyfikator instalacji EOS, więc obszar przypisany w HA daje kontekst pokoju dla poleceń głosowych (`device_id` w `assist_pipeline/run`).
 
 ## Instalacja
 
 1. HACS → Integracje → menu ⋮ → **Niestandardowe repozytoria** → dodaj URL tego repozytorium, kategoria *Integracja*.
-2. Zainstaluj **Helios** i zrestartuj Home Assistant.
-3. Na zegarze (Helios 0.9.0 lub nowszy): przytrzymaj HELIOS → **Paruj z HA** → wybierz swój Home Assistant z listy (mDNS) albo wpisz adres.
-4. Ustawienia → Urządzenia i usługi → **Dodaj integrację** → Helios. HA pokaże 6-cyfrowy kod ważny 5 minut; zostaw to okno otwarte.
+2. Zainstaluj **EOS** i zrestartuj Home Assistant.
+3. Na zegarze (EOS 0.9.0 lub nowszy): przytrzymaj EOS → **Paruj z HA** → wybierz swój Home Assistant z listy (mDNS) albo wpisz adres.
+4. Ustawienia → Urządzenia i usługi → **Dodaj integrację** → EOS. HA pokaże 6-cyfrowy kod ważny 5 minut; zostaw to okno otwarte.
 5. Na zegarze dotknij **Dalej** i wpisz kod → OK. Zegar dostaje własny token HA (bez wklejania czegokolwiek), a jeśli w HA jest integracja Music Assistant, także dostęp do muzyki.
 6. Przypisz urządzenie do obszaru.
 
-Ponowne parowanie tego samego zegara odświeża istniejący wpis (nowy token, stary unieważniony). Usunięcie integracji usuwa użytkownika HA zegara i jego token Music Assistant; zegar przestaje przekazywać `device_id` i prosi o ponowne parowanie. Zegary z Heliosem 0.8.x (parowane przez WebSocket z tokenem administratora) działają dalej do czasu ponownego parowania kodem po aktualizacji aplikacji.
+Ponowne parowanie tego samego zegara odświeża istniejący wpis (nowy token, stary unieważniony). Usunięcie integracji usuwa użytkownika HA zegara i jego token Music Assistant; zegar przestaje przekazywać `device_id` i prosi o ponowne parowanie. Zegary z EOS 0.8.x (parowane przez WebSocket z tokenem administratora) działają dalej do czasu ponownego parowania kodem po aktualizacji aplikacji.
 
 ## Zachowanie i bezpieczeństwo
 
@@ -44,15 +44,15 @@ Protokół kanału (`helios/connect`, `helios/state`, `helios/result`) opisuje s
 
 ## Edytor dashboardu
 
-Karta **Odczyty (1–3 encje)** (`entities`) pokazuje od jednego do trzech wierszy w podanej kolejności. Wybierz encje na liście karty i opcjonalnie nadaj im krótkie nazwy. Dopuszcza dowolną domenę HA; wartości liczbowe mają najwyżej jedno miejsce po przecinku i jednostkę z encji, a brak encji, `unknown` lub `unavailable` daje `—` w danym wierszu. Karta służy do wyświetlania wartości. Domyślny tytuł to `Odczyty`, a ikona nagłówka `mdi:format-list-bulleted`. Przed zapisaniem karty zaktualizuj zegar do Heliosa 0.19 lub nowszego; starszy zegar odrzuci dokument i zachowa poprzedni układ. Schemat pulpitu pozostaje w wersji 6.
+Karta **Odczyty (1–3 encje)** (`entities`) pokazuje od jednego do trzech wierszy w podanej kolejności. Wybierz encje na liście karty i opcjonalnie nadaj im krótkie nazwy. Dopuszcza dowolną domenę HA; wartości liczbowe mają najwyżej jedno miejsce po przecinku i jednostkę z encji, a brak encji, `unknown` lub `unavailable` daje `—` w danym wierszu. Karta służy do wyświetlania wartości. Domyślny tytuł to `Odczyty`, a ikona nagłówka `mdi:format-list-bulleted`. Przed zapisaniem karty zaktualizuj zegar do EOS 0.19 lub nowszego; starszy zegar odrzuci dokument i zachowa poprzedni układ. Schemat pulpitu pozostaje w wersji 6.
 
-Pozycja **Helios** w pasku bocznym (tylko administrator) to wizualny edytor układu zegara: siatka 4×3, strony, formularz na kartę. Kliknij pustą komórkę, aby dodać kartę; kliknij kartę, aby ją edytować lub usunąć. Wybór encji i ikon to formularze HA (`ha-form`); gdy się nie załadują, panel przechodzi na zwykłe pola z listą encji. Edytor sprawdza układ regułami i słowami zegara - to, co przyjmie, przyjmie też zegar.
+Pozycja **EOS** w pasku bocznym (tylko administrator) to wizualny edytor układu zegara: siatka 4×3, strony, formularz na kartę. Kliknij pustą komórkę, aby dodać kartę; kliknij kartę, aby ją edytować lub usunąć. Wybór encji i ikon to formularze HA (`ha-form`); gdy się nie załadują, panel przechodzi na zwykłe pola z listą encji. Edytor sprawdza układ regułami i słowami zegara - to, co przyjmie, przyjmie też zegar.
 
-Edytuje sekcję `helios` pulpitu w trybie storage (domyślnie `helios-clock`, inny z listy) poleceniami frontendu `lovelace/config` i `lovelace/config/save`; reszta pulpitu zostaje nietknięta. Przed zapisem czyta pulpit ponownie i odmawia nadpisania wersji zmienionej w międzyczasie. Dokument w schemacie 2-5 wczytuje się jako jedna strona i przy pierwszym zapisie przechodzi na schemat 6 - wymaga to Heliosa 0.12; starszy zegar odrzuci dokument i zachowa poprzedni układ. JavaScript jest publiczny (bez sekretów); jedyną drogą zapisu jest `lovelace/config/save`, które HA udostępnia tylko administratorom.
+Edytuje sekcję `helios` pulpitu w trybie storage (domyślnie `helios-clock`, inny z listy) poleceniami frontendu `lovelace/config` i `lovelace/config/save`; reszta pulpitu zostaje nietknięta. Przed zapisem czyta pulpit ponownie i odmawia nadpisania wersji zmienionej w międzyczasie. Dokument w schemacie 2-5 wczytuje się jako jedna strona i przy pierwszym zapisie przechodzi na schemat 6 - wymaga to EOS 0.12; starszy zegar odrzuci dokument i zachowa poprzedni układ. JavaScript jest publiczny (bez sekretów); jedyną drogą zapisu jest `lovelace/config/save`, które HA udostępnia tylko administratorom.
 
 ## Wygląd zegara (tło i motyw)
 
-Ustawienia → Urządzenia i usługi → Helios → wybrany zegar → **Konfiguruj**:
+Ustawienia → Urządzenia i usługi → EOS → wybrany zegar → **Konfiguruj**:
 
 - motyw: Ciepły grafit / Nocny błękit,
 - tło: kolor motywu, zachowaj bieżące zdjęcie albo wgraj nowe (JPEG/PNG do 10 MB),

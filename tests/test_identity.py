@@ -16,9 +16,9 @@ async def test_identity_is_a_local_system_user_with_a_ten_year_token(hass):
     user_id, token = await identity.async_create_identity(hass, INSTALLATION)
     user = await hass.auth.async_get_user(user_id)
     assert user.system_generated and user.local_only and not user.is_admin
-    assert user.name == "Helios 0f3c1b2a" and [g.id for g in user.groups] == [GROUP_ID_USER]
+    assert user.name == "EOS 0f3c1b2a" and [g.id for g in user.groups] == [GROUP_ID_USER]
     refresh = next(iter(user.refresh_tokens.values()))
-    assert refresh.token_type == TOKEN_TYPE_SYSTEM and refresh.client_name == "Helios 0f3c1b2a"
+    assert refresh.token_type == TOKEN_TYPE_SYSTEM and refresh.client_name == "EOS 0f3c1b2a"
     assert refresh.access_token_expiration.days == 3650
     assert hass.auth.async_validate_access_token(token).user.id == user_id  # @callback in 2026.8.3, not a coroutine
 
@@ -43,7 +43,7 @@ async def test_identity_creation_cleans_up_when_the_token_step_fails(hass, monke
     monkeypatch.setattr(hass.auth, "async_create_refresh_token", boom)
     with pytest.raises(ValueError):
         await identity.async_create_identity(hass, INSTALLATION)
-    assert not [u for u in await hass.auth.async_get_users() if u.name == "Helios 0f3c1b2a"], "no half-made user survives"
+    assert not [u for u in await hass.auth.async_get_users() if u.name == "EOS 0f3c1b2a"], "no half-made user survives"
 
 
 async def test_remove_identity_never_touches_a_human_user(hass, hass_admin_user):
@@ -132,7 +132,7 @@ async def test_music_section_is_created_and_revoked_through_the_ma_client(hass, 
     section = await identity.async_create_music_section(hass, INSTALLATION)
     # the clock gets the address the server reports, HA keeps the entry url for its own calls (SPEC 0.10 pkt 6.1)
     assert section == {"url": "http://192.0.2.10:8095", "source_url": "http://d5369777-music-assistant:8094", "token": "clock-token", "minted": 2}
-    assert created[0][0] == "ma-token" and created[0][1].startswith("Helios 0f3c1b2a ") and len(created[0][1].split()[-1]) == 6
+    assert created[0][0] == "ma-token" and created[0][1].startswith("EOS 0f3c1b2a ") and len(created[0][1].split()[-1]) == 6
     await identity.async_revoke_music_section(hass, section)
     assert revoked == ["clock-token"]
     await identity.async_revoke_music_section(hass, None)
@@ -261,7 +261,7 @@ async def test_music_section_is_none_without_ma_or_on_errors(hass, monkeypatch):
 @pytest.mark.parametrize("failure", ["timeout", "cancel"])
 async def test_ambiguous_create_token_revokes_only_this_attempt(hass, monkeypatch, failure):
     monkeypatch.setattr(identity, "music_source", lambda hass: ("http://ma:8095", "ma-token"))
-    tokens, revoked = [SimpleNamespace(token_id="t-foreign", name="Helios 0f3c1b2a a1b2c3")], []
+    tokens, revoked = [SimpleNamespace(token_id="t-foreign", name="EOS 0f3c1b2a a1b2c3")], []
 
     class Auth:
         async def create_token(self, name):

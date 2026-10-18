@@ -2,7 +2,7 @@
   "config": {
     "step": {
       "user": {
-        "title": "Paruj zegar Helios"
+        "title": "Paruj zegar EOS"
       }
     },
     "progress": {
@@ -121,7 +121,7 @@
   "issues": {
     "no_music": {
       "title": "{name} bez muzyki",
-      "description": "Music Assistant działa, ale zegar **{name}** nie dostał tokenu Music Assistant, więc nie odtwarza muzyki i nie pojawia się jako odtwarzacz. Dodatek Music Assistant nie pozwala integracji go utworzyć.\n\nW Music Assistant utwórz token długoterminowy i wklej go w opcjach tego zegara (Ustawienia > Urządzenia i usługi > Helios > Konfiguruj) w polu tokenu Music Assistant. Zegary parowane później przejmą wklejony token same."
+      "description": "Music Assistant działa, ale zegar **{name}** nie dostał tokenu Music Assistant, więc nie odtwarza muzyki i nie pojawia się jako odtwarzacz. Dodatek Music Assistant nie pozwala integracji go utworzyć.\n\nW Music Assistant utwórz token długoterminowy i wklej go w opcjach tego zegara (Ustawienia > Urządzenia i usługi > EOS > Konfiguruj) w polu tokenu Music Assistant. Zegary parowane później przejmą wklejony token same."
     }
   }
 }

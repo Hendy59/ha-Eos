@@ -1,4 +1,4 @@
-"""Helios: a Lenovo Smart Clock 2 running the Helios app, connected over HA's own WebSocket API."""
+"""EOS: a Lenovo Smart Clock 2 running the EOS app, connected over HA's own WebSocket API."""
 
 from __future__ import annotations
 

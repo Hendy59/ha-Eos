@@ -20,7 +20,7 @@ TOKEN_LIFETIME = timedelta(days=3650)
 
 
 def _label(installation_id: str) -> str:
-    return f"Helios {installation_id[:8]}"
+    return f"EOS {installation_id[:8]}"
 
 
 async def async_create_identity(hass: HomeAssistant, installation_id: str) -> tuple[str, str]:
@@ -56,7 +56,7 @@ def music_source(hass: HomeAssistant) -> tuple[str, str] | None:
         return None
     entry = loaded[0]
     if len(loaded) > 1:
-        _LOGGER.info("Several Music Assistant entries, Helios uses %s", entry.data.get("url"))
+        _LOGGER.info("Several Music Assistant entries, EOS uses %s", entry.data.get("url"))
     if not (entry.data.get("url") and entry.data.get("token")):
         _LOGGER.warning("Wpis Music Assistant bez tokena (schemat < 28) - zegar bez muzyki")
         return None
@@ -147,7 +147,7 @@ async def async_create_music_section(hass: HomeAssistant, installation_id: str, 
             # use its own token on the LAN webserver. Nothing the integration can do - the user pastes a token once.
             _LOGGER.warning(
                 "Music Assistant will not let the integration mint a token for the clock (the add-on sees Home Assistant as a system user). "
-                "Go to Settings -> Devices and services -> Helios -> Configure and paste a Music Assistant token (Music Assistant -> Settings -> Tokens)."
+                "Go to Settings -> Devices and services -> EOS -> Configure and paste a Music Assistant token (Music Assistant -> Settings -> Tokens)."
             )
         else:
             _LOGGER.warning("Could not create a Music Assistant token for %s: %s", _label(installation_id), type(err).__name__)

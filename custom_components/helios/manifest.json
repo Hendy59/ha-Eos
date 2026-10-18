@@ -1,6 +1,6 @@
 {
   "domain": "helios",
-  "name": "Helios",
+  "name": "EOS",
   "after_dependencies": [
     "frontend",
     "music_assistant"

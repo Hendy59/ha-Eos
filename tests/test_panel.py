@@ -27,7 +27,7 @@ async def test_panel_is_registered_admin_only_with_a_versioned_module(hass):
     assert await async_setup(hass, {})
     entry = await paired(hass, INSTALLATIONS[0])
     panel = hass.data[frontend.DATA_PANELS][PANEL_URL_PATH]
-    assert panel.require_admin is True and panel.component_name == "custom" and panel.sidebar_title == "Helios"
+    assert panel.require_admin is True and panel.component_name == "custom" and panel.sidebar_title == "EOS"
     custom = panel.config["_panel_custom"]
     assert custom["name"] == "helios-panel" and custom["embed_iframe"] is False
     assert custom["module_url"] == f"{PANEL_STATIC_URL}/helios-panel.js?v={VERSION}"

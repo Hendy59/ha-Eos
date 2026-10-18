@@ -65,7 +65,7 @@ export function fromLovelace(doc) {
   const v = helios.version;
   if (Number.isInteger(v) && v >= 2 && v <= 5) {
     const items = Array.isArray(helios.items) ? helios.items.map(clone) : [];
-    return { model: { pages: [{ id: 'main', items }] }, legacyVersion: v, notice: `Dokument w wersji ${v}. Zapis przekształci go do wersji 6 (strony). Wymaga Heliosa 0.12; starszy zegar odrzuci dokument i zachowa poprzedni układ.` };
+    return { model: { pages: [{ id: 'main', items }] }, legacyVersion: v, notice: `Dokument w wersji ${v}. Zapis przekształci go do wersji 6 (strony). Wymaga EOS 0.12; starszy zegar odrzuci dokument i zachowa poprzedni układ.` };
   }
   if (v === VERSION) {
     const pages = Array.isArray(helios.pages) ? helios.pages.map((p) => ({ id: p.id, ...(p.title ? { title: p.title } : {}), items: Array.isArray(p.items) ? p.items.map(clone) : [] })) : [];

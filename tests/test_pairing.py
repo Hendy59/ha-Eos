@@ -163,7 +163,7 @@ async def test_failed_reload_restores_the_old_identity(hass, hass_client_no_auth
     assert entry.data == old_data and entry.state is ConfigEntryState.LOADED
     assert await hass.auth.async_get_user(old_user) is not None
     assert hass.auth.async_validate_access_token(first["token"]) is not None
-    users = [u for u in await hass.auth.async_get_users() if u.system_generated and u.name.startswith("Helios")]
+    users = [u for u in await hass.auth.async_get_users() if u.system_generated and u.name.startswith("EOS")]
     assert [u.id for u in users] == [old_user], "the new identity of the failed attempt is gone"
 
 
@@ -268,7 +268,7 @@ async def test_late_entry_creation_after_timeout_is_undone(hass, hass_client_no_
     await asyncio.sleep(0.6)
     await hass.async_block_till_done()
     assert hass.config_entries.async_entries(DOMAIN) == []
-    assert not [u for u in await hass.auth.async_get_users() if u.system_generated and u.name.startswith("Helios")]
+    assert not [u for u in await hass.auth.async_get_users() if u.system_generated and u.name.startswith("EOS")]
     assert len(hass.data[DOMAIN]["cancelled_users"]) <= 1, "either consumed by the self-removing setup or left for the TTL purge; never an entry"
 
 
@@ -373,7 +373,7 @@ async def test_timeout_keeps_a_marker_until_the_finish_settles_and_stale_markers
     assert (await post(hass, client, flow_id, code)).status == 409
     markers = hass.data[DOMAIN]["cancelled_users"]
     assert len(markers) == 1 and hass.config_entries.async_entries(DOMAIN) == [], "the marker guards against a finish that may still complete"
-    assert not [u for u in await hass.auth.async_get_users() if u.system_generated and u.name.startswith("Helios")]
+    assert not [u for u in await hass.auth.async_get_users() if u.system_generated and u.name.startswith("EOS")]
     markers["stale-user"] = __import__("time").monotonic() - 3601
     assert (await post(hass, client, flow_id, "000000")).status == 401  # every POST purges aged markers first, the live one stays
     assert "stale-user" not in markers and len(markers) == 1
