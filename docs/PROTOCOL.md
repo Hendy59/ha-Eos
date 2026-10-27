@@ -138,7 +138,9 @@ focus point, image URL). Sent on connect and again after every options change.
 ```
 
 `music_assistant` is `null` when there is no Music Assistant. A missing key
-means "unchanged", an explicit `null` means "drop it".
+means "unchanged", an explicit `null` means "drop it". The `connection` event
+is re-sent when the section changes (minted or dropped), so an already
+connected clock picks up Music Assistant without reconnecting.
 
 **`device`** - the Home Assistant device was renamed or moved to another area,
 so the clock can follow with its player name and voice context.
@@ -150,7 +152,9 @@ so the clock can follow with its player name and voice context.
 ```
 
 The allowlist is closed: `lamp.turn_on`, `lamp.turn_off`, `lamp.set_brightness`,
-`audio.set_device_volume`.
+`audio.set_device_volume`, `music.play`, `music.pause`, `music.stop` and
+`announce.play` (argument `url`: an http(s) URL, at most 2048 characters, no
+whitespace - used for announcements and `media_player.play_media`).
 
 **`replaced`** - another device subscribed with the same installation id. The
 clock stops; it does not retry, because it no longer owns the pairing.

@@ -2,14 +2,16 @@
 
 from __future__ import annotations
 
+import asyncio
 import shutil
 
-from homeassistant.config_entries import ConfigEntry
+from homeassistant.config_entries import SIGNAL_CONFIG_ENTRY_CHANGED, ConfigEntry, ConfigEntryChange, ConfigEntryState
 from homeassistant.const import Platform
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import issue_registry as ir
+from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.typing import ConfigType
 
 from . import appearance as ap
@@ -28,7 +30,62 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
         websocket.async_register(hass)
         data["ws_registered"] = True
     async_register_views(hass)
+    if not data.get("music_watcher"):
+        data["music_watcher"] = True
+        _watch_music_assistant(hass)
     return True
+
+
+@callback
+def _watch_music_assistant(hass: HomeAssistant) -> None:
+    """Watch the Music Assistant entries: when one is added or loads (add-on start, reload), catch the clocks up without waiting for a reconnect."""
+    data = hass.data.setdefault(DOMAIN, new_domain_data())
+    watched = data.setdefault("music_watched", set())
+
+    def watch(ma_entry) -> None:
+        if ma_entry.entry_id in watched:
+            return
+        watched.add(ma_entry.entry_id)
+
+        @callback
+        def _loaded(ma_entry=ma_entry) -> None:
+            if ma_entry.state is ConfigEntryState.LOADED:
+                hass.async_create_task(_music_arrived(hass))
+
+        ma_entry.async_on_state_change(_loaded)
+
+    @callback
+    def _entry_changed(change: ConfigEntryChange, ma_entry) -> None:
+        if ma_entry.domain != "music_assistant":
+            return
+        if change is ConfigEntryChange.ADDED:
+            watch(ma_entry)
+        elif change is ConfigEntryChange.REMOVED:
+            watched.discard(ma_entry.entry_id)
+
+    for ma_entry in hass.config_entries.async_entries("music_assistant"):
+        watch(ma_entry)
+    async_dispatcher_connect(hass, SIGNAL_CONFIG_ENTRY_CHANGED, _entry_changed)
+
+
+async def _music_arrived(hass: HomeAssistant) -> None:
+    """Music Assistant became available: re-mint missing or stale clock sections and push them to the connected clocks."""
+    data = hass.data.setdefault(DOMAIN, new_domain_data())
+    for entry in hass.config_entries.async_entries(DOMAIN):
+        if entry.state is not ConfigEntryState.LOADED or not identity.music_section_needs_refresh(hass, entry):
+            continue
+        lock = data["locks"].setdefault(entry.data["installation_id"], asyncio.Lock())
+        try:
+            async with lock:  # the same lock the pairing transaction and helios/connect hold
+                await identity.async_refresh_music_section(hass, entry)
+        finally:
+            if not lock.locked() and not lock._waiters:  # noqa: SLF001 - every exit path drops an idle lock
+                data["locks"].pop(entry.data["installation_id"], None)
+        coordinator = data["entries"].get(entry.entry_id)
+        if coordinator is not None:
+            coordinator.send_connection(identity.connection_payload(hass, dict(entry.data), dict(entry.options)))
+        device = dr.async_get(hass).async_get_device(identifiers={(DOMAIN, entry.data["installation_id"])})
+        websocket._music_issue(hass, entry, entry.data.get("music_assistant"), device)  # noqa: SLF001 - shared with the connect path
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:

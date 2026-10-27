@@ -9,7 +9,7 @@ from datetime import timedelta
 
 from homeassistant.auth.const import GROUP_ID_USER
 from homeassistant.auth.models import TOKEN_TYPE_SYSTEM
-from homeassistant.config_entries import ConfigEntryState
+from homeassistant.config_entries import ConfigEntry, ConfigEntryState
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
@@ -163,6 +163,42 @@ async def async_create_music_section(hass: HomeAssistant, installation_id: str, 
         await async_revoke_music_section(hass, section)
         return None
     return section
+
+
+def music_section_needs_refresh(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+    """True when the stored Music Assistant section is missing or stale: MA (re)appeared or changed, a pasted token changed, or the section is from an older revision."""
+    section = entry.data.get("music_assistant")
+    manual = (entry.options.get("music_token") or "").strip()
+    source = music_source(hass) if not manual else quiet_music_source(hass)
+    stale = section is not None and (
+        (source is None and not manual)
+        or (source is not None and section.get("source_url") != source[0])
+        or section.get("minted") != MUSIC_SECTION_REVISION
+        or (manual and section.get("token") != manual)
+        or (not manual and section.get("manual"))
+    )
+    missing = section is None and (source is not None or manual)
+    return stale or missing
+
+
+async def async_refresh_music_section(hass: HomeAssistant, entry: ConfigEntry) -> dict | None:
+    """Re-mint (or clear) the clock's section under the caller's lock; persists it and revokes the replaced token. Returns the section now stored."""
+    section = entry.data.get("music_assistant")
+    current = hass.config_entries.async_get_entry(entry.entry_id)
+    if current is None or current.data.get("user_id") != entry.data.get("user_id"):
+        return section  # re-paired meanwhile: the fresh entry owns the section
+    if current.data.get("music_assistant") != section:
+        return current.data.get("music_assistant")  # another refresh already did the work
+    manual = (current.options.get("music_token") or "").strip()
+    source = music_source(hass) if not manual else quiet_music_source(hass)
+    fresh = await async_create_music_section(hass, current.data["installation_id"], dict(current.options)) if (source is not None or manual) else None
+    try:
+        hass.config_entries.async_update_entry(current, data={**current.data, "music_assistant": fresh})
+    except Exception:  # noqa: BLE001 - the stored (old) section stays valid: only the token of this attempt goes
+        await async_revoke_music_section(hass, fresh)
+        return section
+    await async_revoke_music_section(hass, section)  # only after the new section is persisted (best effort when the server is gone)
+    return fresh
 
 
 async def _token_refused(hass: HomeAssistant, section: dict) -> str | None:

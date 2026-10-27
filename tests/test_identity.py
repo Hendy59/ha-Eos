@@ -8,6 +8,7 @@ from homeassistant.config_entries import ConfigEntryState
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.helios import identity
+from custom_components.helios.const import DOMAIN, MUSIC_SECTION_REVISION
 
 INSTALLATION = "0f3c1b2a-9d8e-4c7b-a6f5-1e2d3c4b5a69"
 
@@ -324,3 +325,62 @@ async def test_a_pasted_token_without_any_address_is_refused(hass, monkeypatch, 
     monkeypatch.setattr(identity, "quiet_music_source", lambda hass: None)
     assert await identity.async_create_music_section(hass, INSTALLATION, {"music_token": "t"}) is None
     assert "server address is unknown" in caplog.text
+
+
+def test_music_section_needs_refresh(hass):
+    entry = MockConfigEntry(domain=DOMAIN, unique_id=INSTALLATION, data={"installation_id": INSTALLATION, "music_assistant": None})
+    entry.add_to_hass(hass)
+    assert not identity.music_section_needs_refresh(hass, entry), "no MA and no section: nothing to do"
+    ma = MockConfigEntry(domain="music_assistant", data={"url": "http://ma:8095", "token": "ma-token"})
+    ma.add_to_hass(hass)
+    assert not identity.music_section_needs_refresh(hass, entry), "MA is not loaded yet"
+    ma.mock_state(hass, ConfigEntryState.LOADED)
+    assert identity.music_section_needs_refresh(hass, entry), "MA is there, the clock has no section"
+    hass.config_entries.async_update_entry(entry, data={**entry.data, "music_assistant": {"url": "http://ma:8095", "source_url": "http://ma:8095", "token": "clock-token", "minted": MUSIC_SECTION_REVISION}})
+    assert not identity.music_section_needs_refresh(hass, entry), "a fresh section needs no refresh"
+    hass.config_entries.async_update_entry(entry, data={**entry.data, "music_assistant": {"url": "http://ma:8095", "source_url": "http://ma:8095", "token": "clock-token", "minted": 1}})
+    assert identity.music_section_needs_refresh(hass, entry), "a section from an older revision is stale"
+    ma.mock_state(hass, ConfigEntryState.NOT_LOADED)
+    assert identity.music_section_needs_refresh(hass, entry), "MA is gone: the section is stale"
+
+
+def test_music_section_needs_refresh_with_a_pasted_token(hass):
+    ma = MockConfigEntry(domain="music_assistant", data={"url": "http://ma:8095", "token": "ma-token"})
+    ma.add_to_hass(hass)
+    ma.mock_state(hass, ConfigEntryState.LOADED)
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        unique_id=INSTALLATION,
+        data={"installation_id": INSTALLATION, "music_assistant": {"url": "http://ma:8095", "source_url": "http://ma:8095", "token": "pasted", "minted": MUSIC_SECTION_REVISION, "manual": True}},
+        options={"music_token": "pasted"},
+    )
+    entry.add_to_hass(hass)
+    assert not identity.music_section_needs_refresh(hass, entry)
+    hass.config_entries.async_update_entry(entry, options={"music_token": "changed"})
+    assert identity.music_section_needs_refresh(hass, entry), "the pasted token changed"
+
+
+async def test_refresh_mints_persists_and_revokes_the_replaced_token(hass, monkeypatch):
+    log = []
+    monkeypatch.setattr(identity, "music_source", lambda hass: ("http://ma:8095", "ma-token"))
+    monkeypatch.setattr(identity, "async_public_music_url", lambda hass, url: _url("http://192.0.2.10:8095"))
+    monkeypatch.setattr(identity, "_client", _fake_client(log, None))
+    old = {"url": "http://192.0.2.10:8095", "source_url": "http://ma:8095", "token": "old-clock-token", "minted": MUSIC_SECTION_REVISION}
+    entry = MockConfigEntry(domain=DOMAIN, unique_id=INSTALLATION, data={"installation_id": INSTALLATION, "music_assistant": old})
+    entry.add_to_hass(hass)
+    section = await identity.async_refresh_music_section(hass, entry)
+    assert section == {"url": "http://192.0.2.10:8095", "source_url": "http://ma:8095", "token": "clock-token", "minted": MUSIC_SECTION_REVISION}
+    assert entry.data["music_assistant"] == section, "the new section is persisted"
+    assert any(step[0] == "create" for step in log), "a new token is minted"
+    assert any(step[0] == "logout" for step in log), "the replaced token is revoked after the new one is stored"
+
+
+async def test_refresh_clears_the_section_when_ma_is_gone(hass, monkeypatch):
+    log = []
+    monkeypatch.setattr(identity, "_client", _fake_client(log, None))
+    old = {"url": "http://ma:8095", "source_url": "http://ma:8095", "token": "old-clock-token", "minted": MUSIC_SECTION_REVISION}
+    entry = MockConfigEntry(domain=DOMAIN, unique_id=INSTALLATION, data={"installation_id": INSTALLATION, "music_assistant": old})
+    entry.add_to_hass(hass)
+    assert await identity.async_refresh_music_section(hass, entry) is None
+    assert entry.data["music_assistant"] is None, "MA is gone: the clock's section is cleared"
+    assert any(step[0] == "logout" for step in log), "the stale token is revoked"

@@ -180,11 +180,11 @@ The clock communicates with Home Assistant through a local WebSocket connection.
 - Voice-state and diagnostic sensors
 - Dock and charging binary sensors
 - Dock lamp control with brightness support
-- Device volume control and media-player support
+- Device volume control, media-player support (volume, transport, play_media) and an Assist voice satellite with announcements
 - EOS dashboard editor in the Home Assistant sidebar
 - Per-clock dashboards and shared dashboards
 - Custom themes, backgrounds, dimming, and focus-point settings
-- Optional Music Assistant integration
+- Automatic Music Assistant integration (token minted and pushed to the clock, also when Music Assistant starts later)
 - Support for dashboard cards including:
   - Energy
   - Thermostat
@@ -204,7 +204,8 @@ The integration has no additional Python runtime dependencies.
 | `binary_sensor` | Phone charging | Qi charging status; requires a dock |
 | `light` | Dock lamp | On/off control and brightness from 1–10 |
 | `number` | Device volume | `STREAM_MUSIC` volume from 0–100% |
-| `media_player` | Clock speaker | Volume control for Home Assistant Assist |
+| `media_player` | Clock speaker | Volume, transport and play_media (TTS, media, Music Assistant streams) for Home Assistant Assist and the media browser |
+| `assist_satellite` | Satellite | Voice satellite: mirrors the clock's voice state and accepts announcements |
 
 Entities remain unavailable until the clock sends its first state snapshot. If the WebSocket connection is lost, the integration marks the entities unavailable.
 
@@ -296,7 +297,9 @@ Uploaded images are processed locally by Home Assistant. EXIF orientation is app
 
 ## Music Assistant
 
-Music Assistant support is optional. When available, EOS can provide the clock with a separate Music Assistant token.
+Music Assistant support is optional and automatic. When a Music Assistant integration is loaded, EOS mints a separate token for the clock and pushes the Music Assistant address, token and Sendspin address to it. This also happens when Music Assistant starts later (an add-on that boots after Home Assistant) or is installed while a clock is already connected: the clock then connects to Music Assistant on its own and appears there as a player.
+
+The clock is also a media player in Home Assistant: `media_player.play_media` plays TTS, media files and Music Assistant streams on it.
 
 If Music Assistant runs as an add-on and cannot issue a usable token automatically, provide a token through:
 

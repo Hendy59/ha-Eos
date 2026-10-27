@@ -14,6 +14,7 @@
     "assist_satellite",
     "file_upload",
     "http",
+    "media_source",
     "websocket_api"
   ],
   "documentation": "https://github.com/SychPL/ha-helios",

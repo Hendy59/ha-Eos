@@ -15,7 +15,7 @@ from homeassistant.helpers import issue_registry as ir
 from homeassistant.helpers.event import async_track_device_registry_updated_event
 
 from . import identity
-from .const import DOMAIN, MUSIC_SECTION_REVISION, PROTOCOL, PROTOCOLS, dashboard_path_for, valid_dashboard_path
+from .const import DOMAIN, PROTOCOL, PROTOCOLS, dashboard_path_for, valid_dashboard_path
 from .coordinator import HeliosCoordinator
 
 
@@ -62,18 +62,7 @@ async def ws_connect(hass: HomeAssistant, connection, msg: dict) -> None:
         connection.send_error(msg["id"], "unauthorized", "Unknown device, or paired with a different user - pair it again with a code")
         return
     section = entry.data.get("music_assistant")
-    manual = (entry.options.get("music_token") or "").strip()
-    source = identity.music_source(hass) if not manual else identity.quiet_music_source(hass)
-    # MA gone, a different MA server, a pasted token that changed, or a section from an older version (address or token unusable)
-    stale = section is not None and (
-        (source is None and not manual)
-        or (source is not None and section.get("source_url") != source[0])
-        or section.get("minted") != MUSIC_SECTION_REVISION
-        or (manual and section.get("token") != manual)
-        or (not manual and section.get("manual"))
-    )
-    missing = section is None and (source is not None or manual)
-    if stale or missing:
+    if identity.music_section_needs_refresh(hass, entry):  # MA gone, another server, a changed pasted token, or a section from an older version
         lock = data["locks"].setdefault(installation_id, asyncio.Lock())
         try:
             async with lock:  # the same lock the pairing transaction holds through its steps 3-5
@@ -81,18 +70,7 @@ async def ws_connect(hass: HomeAssistant, connection, msg: dict) -> None:
                 if entry is None:
                     connection.send_error(msg["id"], "unauthorized", "This device has been paired again")
                     return
-                if entry.data.get("music_assistant") != section:
-                    section = entry.data.get("music_assistant")  # another connect already did the work
-                else:
-                    old = section
-                    fresh = await identity.async_create_music_section(hass, installation_id, dict(entry.options)) if (source is not None or manual) else None
-                    try:
-                        hass.config_entries.async_update_entry(entry, data={**entry.data, "music_assistant": fresh})
-                    except Exception:  # noqa: BLE001 - the stored (old) section stays valid: only the token of this attempt goes
-                        await identity.async_revoke_music_section(hass, fresh)
-                    else:
-                        section = fresh
-                        await identity.async_revoke_music_section(hass, old)  # only after the new section is persisted (best effort when the server is gone)
+                section = await identity.async_refresh_music_section(hass, entry)
         finally:
             if not lock.locked() and not lock._waiters:  # noqa: SLF001 - every exit path drops an idle lock
                 data["locks"].pop(installation_id, None)

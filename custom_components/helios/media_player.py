@@ -1,13 +1,15 @@
-"""The clock as a media_player: its own output volume plus play/pause/stop of the local music session, so Assist media intents ("turn off the music", Polish "wyłącz muzykę") can target it by area."""
+"""The clock as a media_player: its own output volume, transport of the local music session and play_media for URLs, so Assist media intents ("turn off the music", Polish "wyłącz muzykę") and the media browser can target it by area."""
 
 from __future__ import annotations
 
-from homeassistant.components.media_player import MediaPlayerDeviceClass, MediaPlayerEntity, MediaPlayerEntityFeature, MediaPlayerState
+from homeassistant.components.media_player import MediaPlayerDeviceClass, MediaPlayerEntity, MediaPlayerEntityFeature, MediaPlayerState, async_process_play_media_url
+from homeassistant.components.media_source import async_resolve_media
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from .const import DOMAIN
+from .const import DOMAIN, validate_command
 from .entity import HeliosEntity
 
 VOLUME_STEP = 0.1
@@ -18,7 +20,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
 
 
 class HeliosSpeaker(HeliosEntity, MediaPlayerEntity):
-    """Device volume plus transport of the clock's local session (0.8.7+). Not a music source: Music Assistant exposes its own player for browsing."""
+    """Device volume plus transport of the clock's local session (0.8.7+) and play_media for URLs (announce.play). Not a music source: Music Assistant exposes its own player for browsing."""
 
     _attr_translation_key = "clock_speaker"
     _attr_device_class = MediaPlayerDeviceClass.SPEAKER
@@ -29,6 +31,7 @@ class HeliosSpeaker(HeliosEntity, MediaPlayerEntity):
         | MediaPlayerEntityFeature.PAUSE
         | MediaPlayerEntityFeature.STOP
         | MediaPlayerEntityFeature.TURN_OFF
+        | MediaPlayerEntityFeature.PLAY_MEDIA
     )
     _attr_icon = "mdi:speaker"
 
@@ -59,6 +62,15 @@ class HeliosSpeaker(HeliosEntity, MediaPlayerEntity):
     async def async_turn_off(self) -> None:
         """A "turn off the music" intent lands here through the Assist media intents: stop the local session, the clock itself stays on."""
         await self.coordinator.async_command("music.stop", {})
+
+    async def async_play_media(self, media_type: str, media_id: str, **kwargs) -> None:
+        """Play a URL on the clock (TTS stream, media or Music Assistant stream); confirmed or it fails, never retried."""
+        if media_id.startswith("media-source://"):
+            media_id = (await async_resolve_media(self.hass, media_id, self.entity_id)).url
+        url = async_process_play_media_url(self.hass, media_id)  # signs Home Assistant URLs (TTS), passes other http(s) URLs through
+        if validate_command("announce.play", {"url": url}) is not None:
+            raise HomeAssistantError("EOS can only play http(s) URLs")
+        await self.coordinator.async_command("announce.play", {"url": url})
 
     @property
     def volume_level(self) -> float | None:
