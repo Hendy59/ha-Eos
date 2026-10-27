@@ -37,6 +37,12 @@ COMMANDS: dict[str, dict[str, tuple[int, int]]] = {
     "music.stop": {},
 }
 
+# commands whose arguments are URLs instead of integers: command -> the exact argument names
+URL_COMMANDS: dict[str, tuple[str, ...]] = {
+    "announce.play": ("url",),
+}
+MAX_COMMAND_URL_LENGTH = 2048
+
 
 def brightness_to_level(brightness: int) -> int:
     """HA brightness 1..255 to the dock's ten levels; zero is turn_off and never reaches here."""
@@ -47,18 +53,28 @@ def level_to_brightness(level: int) -> int:
     return max(1, min(255, round(level * 255 / 10)))
 
 
+def _valid_url(value: object) -> bool:
+    """An http(s) URL without whitespace, length-bounded (TTS stream and media URLs are signed and can be long)."""
+    return isinstance(value, str) and value.startswith(("http://", "https://")) and len(value) <= MAX_COMMAND_URL_LENGTH and not any(char.isspace() for char in value)
+
+
 def validate_command(command: str, args: dict) -> str | None:
-    """Returns None when the command and its integer arguments are inside the allowlist, else an error code."""
+    """Returns None when the command and its arguments are inside the allowlist, else an error code."""
     spec = COMMANDS.get(command)
-    if spec is None:
-        return "unknown_command"
-    for key, (low, high) in spec.items():
-        value = args.get(key)
-        if not isinstance(value, int) or isinstance(value, bool) or value < low or value > high:
+    if spec is not None:
+        for key, (low, high) in spec.items():
+            value = args.get(key)
+            if not isinstance(value, int) or isinstance(value, bool) or value < low or value > high:
+                return "invalid_args"
+        if set(args) - set(spec):
             return "invalid_args"
-    if set(args) - set(spec):
-        return "invalid_args"
-    return None
+        return None
+    url_args = URL_COMMANDS.get(command)
+    if url_args is not None:
+        if set(args) != set(url_args):
+            return "invalid_args"
+        return None if all(_valid_url(args.get(key)) for key in url_args) else "invalid_args"
+    return "unknown_command"
 
 
 def valid_dashboard_path(value: object) -> bool:

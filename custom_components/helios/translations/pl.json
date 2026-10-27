@@ -116,6 +116,11 @@
       "clock_speaker": {
         "name": "Głośnik zegara"
       }
+    },
+    "assist_satellite": {
+      "satellite": {
+        "name": "Satelita"
+      }
     }
   },
   "issues": {
