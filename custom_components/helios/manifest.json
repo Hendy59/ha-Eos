@@ -11,8 +11,10 @@
   "config_flow": true,
   "dependencies": [
     "assist_pipeline",
+    "assist_satellite",
     "file_upload",
     "http",
+    "media_source",
     "websocket_api"
   ],
   "documentation": "https://github.com/SychPL/ha-helios",
@@ -20,5 +22,5 @@
   "iot_class": "local_push",
   "issue_tracker": "https://github.com/SychPL/ha-helios/issues",
   "requirements": [],
-  "version": "0.17.0"
+  "version": "0.18.0"
 }

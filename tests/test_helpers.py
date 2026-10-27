@@ -33,6 +33,22 @@ def test_command_validation_is_an_allowlist_with_typed_ranges():
     assert const.validate_command("shell.exec", {"cmd": "rm"}) == "unknown_command"
 
 
+def test_command_validation_accepts_bounded_http_urls_for_announce():
+    assert const.validate_command("announce.play", {"url": "https://ha.local/api/tts/abc.mp3"}) is None
+    assert const.validate_command("announce.play", {"url": "http://192.0.2.10:8123/media/x.wav"}) is None
+    for bad in (
+        {},
+        {"url": 5},
+        {"url": ""},
+        {"url": "ha.local/x.mp3"},
+        {"url": "ftp://ha.local/x.mp3"},
+        {"url": "https://ha.local/x y.mp3"},
+        {"url": "https://" + "x" * const.MAX_COMMAND_URL_LENGTH},
+        {"url": "https://ha.local/x.mp3", "extra": 1},
+    ):
+        assert const.validate_command("announce.play", bad) == "invalid_args", bad
+
+
 INSTALLATION = "0f3c1b2a-9d8e-4c7b-a6f5-1e2d3c4b5a69"
 
 

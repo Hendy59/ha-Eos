@@ -116,6 +116,11 @@
       "clock_speaker": {
         "name": "Clock speaker"
       }
+    },
+    "assist_satellite": {
+      "satellite": {
+        "name": "Satellite"
+      }
     }
   },
   "issues": {

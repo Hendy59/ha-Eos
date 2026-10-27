@@ -247,3 +247,45 @@ async def test_a_clock_without_music_while_ma_runs_is_a_repairs_issue(hass, hass
     result, _ = await connect(ws2)
     assert result["success"]
     assert ir.async_get(hass).async_get_issue(DOMAIN, f"no_music_{entry.entry_id}") is None
+
+
+async def test_a_connected_clock_catches_up_when_music_assistant_loads_late(hass, hass_ws_client, monkeypatch):
+    ma = MockConfigEntry(domain="music_assistant", data={"url": "http://ma:8095", "token": "ma-token"})
+    ma.add_to_hass(hass)  # the add-on exists but is still starting when the clock connects
+    entry, token = await paired(hass)
+    ws = await hass_ws_client(hass, access_token=token)
+    result, events = await connect(ws)
+    assert result["success"] and events[2]["music_assistant"] is None
+
+    async def fake_create(hass, installation_id, options=None):
+        return {"url": "http://ma:8095", "token": "clock-token"}
+
+    monkeypatch.setattr(identity, "async_create_music_section", fake_create)
+    ma.mock_state(hass, ConfigEntryState.LOADED)  # the add-on finished starting; the clock stays connected
+    await hass.async_block_till_done()
+    assert entry.data["music_assistant"] == {"url": "http://ma:8095", "token": "clock-token"}
+    event = await until_connection(ws)
+    assert event["music_assistant"] == {"url": "http://ma:8095", "token": "clock-token", "sendspin_url": "ws://ma:8927/sendspin"}
+
+
+async def test_a_connected_clock_catches_up_when_music_assistant_is_installed_late(hass, hass_ws_client, monkeypatch):
+    from homeassistant.config_entries import SIGNAL_CONFIG_ENTRY_CHANGED, ConfigEntryChange
+    from homeassistant.helpers.dispatcher import async_dispatcher_send
+
+    entry, token = await paired(hass)
+    ws = await hass_ws_client(hass, access_token=token)
+    result, events = await connect(ws)
+    assert result["success"] and events[2]["music_assistant"] is None
+
+    async def fake_create(hass, installation_id, options=None):
+        return {"url": "http://ma:8095", "token": "clock-token"}
+
+    monkeypatch.setattr(identity, "async_create_music_section", fake_create)
+    ma = MockConfigEntry(domain="music_assistant", data={"url": "http://ma:8095", "token": "ma-token"})
+    ma.add_to_hass(hass)
+    async_dispatcher_send(hass, SIGNAL_CONFIG_ENTRY_CHANGED, ConfigEntryChange.ADDED, ma)  # add_to_hass does not fire it
+    ma.mock_state(hass, ConfigEntryState.LOADED)
+    await hass.async_block_till_done()
+    assert entry.data["music_assistant"] == {"url": "http://ma:8095", "token": "clock-token"}
+    event = await until_connection(ws)
+    assert event["music_assistant"]["token"] == "clock-token"

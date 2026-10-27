@@ -13,7 +13,8 @@ Integracja dla zegara z aplikacją [EOS](https://github.com/SychPL/helios) (Leno
 | `binary_sensor` Ładowanie telefonu | listener ładowania Qi; niedostępny bez docka |
 | `light` Lampka docka | on/off z odczytu OEM, jasność 1-10 jako nastawa |
 | `number` Głośność urządzenia | `STREAM_MUSIC` 0-100 %, odczyt co 3 s |
-| `media_player` Głośnik zegara | ta sama głośność urządzenia jako odtwarzacz (tylko `volume_set`/`volume_step`), żeby Assist rozumiał "głośniej"/"ustaw głośność" w obszarze zegara; muzykę obsługuje osobny odtwarzacz Music Assistant |
+| `media_player` Głośnik zegara | głośność urządzenia jako odtwarzacz (`volume_set`/`volume_step`), transport lokalnej sesji (`play`/`pause`/`stop`) oraz `play_media` (TTS, pliki multimedialne, strumienie Music Assistant) — żeby Assist rozumiał "głośniej" w obszarze zegara i żeby można było kazać muzyce grać na zegarze |
+| `assist_satellite` Satelita | satelita głosowy: odzwierciedla stan głosu zegara i przyjmuje komunikaty (announce) |
 
 Urządzenie w rejestrze HA ma stały identyfikator instalacji EOS, więc obszar przypisany w HA daje kontekst pokoju dla poleceń głosowych (`device_id` w `assist_pipeline/run`).
 
@@ -31,10 +32,10 @@ Ponowne parowanie tego samego zegara odświeża istniejący wpis (nowy token, st
 ## Zachowanie i bezpieczeństwo
 
 - Encje są niedostępne, dopóki zegar nie prześle pierwszego snapshotu; rozłączenie gniazda oznacza je jako `unavailable` bez dodatkowych heartbeatów.
-- Polecenia (`lamp.turn_on`, `lamp.turn_off`, `lamp.set_brightness`, `audio.set_device_volume`) to zamknięta lista; HA czeka na potwierdzenie do 10 s i nigdy nie ponawia.
+- Polecenia (`lamp.turn_on`, `lamp.turn_off`, `lamp.set_brightness`, `audio.set_device_volume`, `music.play`, `music.pause`, `music.stop`, `announce.play` z adresem URL) to zamknięta lista; HA czeka na potwierdzenie do 10 s i nigdy nie ponawia.
 - Każdy zegar ma własnego użytkownika systemowego HA (bez uprawnień administratora, tylko z sieci lokalnej) i token ważny 10 lat, tworzone przy parowaniu i usuwane razem z wpisem. Kanał przyjmuje tylko połączenia tego użytkownika.
 - Parowanie idzie przez nieuwierzytelniony `POST /api/helios/pair` w sieci lokalnej: kod 6 cyfr ważny 5 minut, po 5 błędnych próbach z jednego adresu ten adres jest blokowany na 5 minut, odpowiedzi błędów nie zdradzają niczego, kod i token nie trafiają do dziennika.
-- Music Assistant: integracja bierze adres i token z wpisu core `music_assistant`, tworzy dla zegara osobny token MA (widoczny na liście tokenów w MA) i podaje adres Sendspin (`ws://<host MA>:8927/sendspin`, do nadpisania w opcjach). Bez MA w HA zegar działa bez muzyki.
+- Music Assistant: integracja sama wykrywa MA (także gdy add-on startuje później lub MA jest instalowane, gdy zegar już jest połączony), bierze adres i token z wpisu core `music_assistant`, tworzy dla zegara osobny token MA (widoczny na liście tokenów w MA) i podaje adres Sendspin (`ws://<host MA>:8927/sendspin`, do nadpisania w opcjach) — zegar sam łączy się z MA i pojawia się tam jako odtwarzacz. Bez MA w HA zegar działa bez muzyki.
 
 ## Rozwój
 
