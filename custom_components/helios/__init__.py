@@ -18,7 +18,7 @@ from .const import DOMAIN, new_domain_data
 from .coordinator import HeliosCoordinator
 from .http import async_register_views
 
-PLATFORMS = [Platform.SENSOR, Platform.BINARY_SENSOR, Platform.LIGHT, Platform.NUMBER, Platform.MEDIA_PLAYER]
+PLATFORMS = [Platform.ASSIST_SATELLITE, Platform.SENSOR, Platform.BINARY_SENSOR, Platform.LIGHT, Platform.NUMBER, Platform.MEDIA_PLAYER]
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
 

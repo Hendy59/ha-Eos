@@ -20,6 +20,14 @@ No pip dependencies, push only (`iot_class: local_push`).
 | `light` Dock lamp | on/off read from the OEM service, brightness 1-10 |
 | `number` Device volume | `STREAM_MUSIC` 0-100 %, polled every 3 s |
 | `media_player` Clock speaker | the same device volume as a player (`volume_set` / `volume_step` only), so Assist understands "louder" in the clock's area; music itself is a separate Music Assistant player |
+| `assist_satellite` Satellite | the clock registered as a voice satellite: its voice state (idle / listening / processing / responding) and `announce` playback of a TTS or media URL on the clock |
+
+The satellite entity is how Home Assistant sees the clock as a voice device: it
+appears in the voice assistant settings and accepts
+`assist_satellite.announce`. Home Assistant resolves the announcement to a
+signed TTS stream or media URL and the clock plays it (`announce.play`, like
+every command confirmed or failed, never retried; an EOS app that does not
+know the command fails the service call).
 
 The device carries the clock's stable installation id, so the area you assign in
 Home Assistant becomes the room context of every voice command (the `device_id`
@@ -63,7 +71,8 @@ means before you install it.
   reveal nothing; neither the code nor the token is ever logged.
 - **What the clock can do with it.** The device channel accepts connections from
   that user only, and the command allowlist is closed: `lamp.turn_on`,
-  `lamp.turn_off`, `lamp.set_brightness`, `audio.set_device_volume`. Home
+  `lamp.turn_off`, `lamp.set_brightness`, `audio.set_device_volume`,
+  `music.play`, `music.pause`, `music.stop`, `announce.play`. Home
   Assistant waits up to 10 s for a confirmation and never retries.
 - **Removal cleans up.** Deleting the config entry deletes the clock's user, its
   Music Assistant token and its stored background image. The clock notices,
