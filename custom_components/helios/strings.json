@@ -127,6 +127,10 @@
     "no_music": {
       "title": "{name} has no music",
       "description": "Music Assistant is running, but the clock **{name}** could not get a Music Assistant token, so it cannot play music or appear as a player. A Music Assistant add-on does not let the integration create one.\n\nIn Music Assistant create a long-lived token, then paste it into this clock's options (Settings > Devices & services > EOS > Configure) in the Music Assistant token field. Clocks paired later reuse a pasted token automatically."
+    },
+    "app_update": {
+      "title": "New EOS app version {latest} available",
+      "description": "GitHub has a newer EOS app release **{latest}** than the newest clock here runs (**{current}**). On the clock, open the menu and tap the update entry to install it."
     }
   }
 }

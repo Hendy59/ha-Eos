@@ -69,7 +69,7 @@ class HeliosCoordinator(DataUpdateCoordinator[dict]):
 
     @callback
     def send_connection(self, payload: dict) -> None:
-        """The connection event (pipeline, dashboard path, MA section, diagnostics) after connected and after every options save."""
+        """The connection event (pipeline, dashboard path, MA section, diagnostics, HA language) after connected and after every options save."""
         if self.connection is None:
             return
         try:

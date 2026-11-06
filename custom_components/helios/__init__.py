@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import logging
 import shutil
 
 from homeassistant.config_entries import SIGNAL_CONFIG_ENTRY_CHANGED, ConfigEntry, ConfigEntryChange, ConfigEntryState
@@ -11,14 +12,17 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import issue_registry as ir
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.typing import ConfigType
 
 from . import appearance as ap
 from . import identity, panel, websocket
-from .const import DOMAIN, new_domain_data
+from .const import APP_RELEASES_URL, DOMAIN, LATEST_APP_RELEASE_API, new_domain_data, release_if_idle, version_tuple
 from .coordinator import HeliosCoordinator
 from .http import async_register_views
+
+_LOGGER = logging.getLogger(__name__)
 
 PLATFORMS = [Platform.ASSIST_SATELLITE, Platform.SENSOR, Platform.BINARY_SENSOR, Platform.LIGHT, Platform.NUMBER, Platform.MEDIA_PLAYER]
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
@@ -33,7 +37,30 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     if not data.get("music_watcher"):
         data["music_watcher"] = True
         _watch_music_assistant(hass)
+    if not data.get("update_checked"):
+        data["update_checked"] = True
+        hass.async_create_task(_check_app_update(hass))
     return True
+
+
+async def _check_app_update(hass: HomeAssistant) -> None:
+    """One repairs issue when GitHub has a newer EOS app release than the newest app_version the clocks reported (the in-app updater covers the clock itself)."""
+    current = max((entry.data.get("app_version") or "" for entry in hass.config_entries.async_entries(DOMAIN)), default="")
+    if not current:
+        return  # no clock has reported a version yet
+    try:
+        async with asyncio.timeout(10):
+            response = await async_get_clientsession(hass).get(LATEST_APP_RELEASE_API, headers={"Accept": "application/vnd.github+json"})
+            latest = str((await response.json()).get("tag_name") or "").lstrip("v")
+    except Exception:  # noqa: BLE001 - offline, rate-limited or an unexpected payload: no issue, retry on next start
+        _LOGGER.debug("EOS app update check failed", exc_info=True)
+        return
+    if not latest:
+        return
+    if version_tuple(latest) > version_tuple(current):
+        ir.async_create_issue(hass, DOMAIN, "app_update", is_fixable=False, severity=ir.IssueSeverity.WARNING, translation_key="app_update", translation_placeholders={"latest": latest, "current": current}, learn_more_url=APP_RELEASES_URL)
+    else:
+        ir.async_delete_issue(hass, DOMAIN, "app_update")
 
 
 @callback
@@ -79,13 +106,12 @@ async def _music_arrived(hass: HomeAssistant) -> None:
             async with lock:  # the same lock the pairing transaction and helios/connect hold
                 await identity.async_refresh_music_section(hass, entry)
         finally:
-            if not lock.locked() and not lock._waiters:  # noqa: SLF001 - every exit path drops an idle lock
-                data["locks"].pop(entry.data["installation_id"], None)
+            release_if_idle(data["locks"], entry.data["installation_id"], lock)  # every exit path drops an idle lock
         coordinator = data["entries"].get(entry.entry_id)
         if coordinator is not None:
             coordinator.send_connection(identity.connection_payload(hass, dict(entry.data), dict(entry.options)))
         device = dr.async_get(hass).async_get_device(identifiers={(DOMAIN, entry.data["installation_id"])})
-        websocket._music_issue(hass, entry, entry.data.get("music_assistant"), device)  # noqa: SLF001 - shared with the connect path
+        websocket.music_issue(hass, entry, entry.data.get("music_assistant"), device)  # shared with the connect path
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:

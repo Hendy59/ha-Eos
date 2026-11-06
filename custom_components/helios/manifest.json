@@ -6,7 +6,7 @@
     "music_assistant"
   ],
   "codeowners": [
-    "@SychPL"
+    "@Hendy59"
   ],
   "config_flow": true,
   "dependencies": [
@@ -17,10 +17,10 @@
     "media_source",
     "websocket_api"
   ],
-  "documentation": "https://github.com/SychPL/ha-helios",
+  "documentation": "https://github.com/Hendy59/ha-Eos",
   "integration_type": "device",
   "iot_class": "local_push",
-  "issue_tracker": "https://github.com/SychPL/ha-helios/issues",
+  "issue_tracker": "https://github.com/Hendy59/ha-Eos/issues",
   "requirements": [],
   "version": "0.18.0"
 }

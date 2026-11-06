@@ -133,7 +133,8 @@ focus point, image URL). Sent on connect and again after every options change.
   "pipeline": "<assist pipeline id>",
   "dashboard_path": "helios-clock",
   "music_assistant": { "url": "http://ma:8095", "token": "...", "sendspin_url": "ws://ma:8927/sendspin" },
-  "diagnostics_url": null
+  "diagnostics_url": null,
+  "language": "de"
 }
 ```
 
@@ -141,6 +142,11 @@ focus point, image URL). Sent on connect and again after every options change.
 means "unchanged", an explicit `null` means "drop it". The `connection` event
 is re-sent when the section changes (minted or dropped), so an already
 connected clock picks up Music Assistant without reconnecting.
+
+`language` is the Home Assistant UI language (for example `"de"`). Clock builds
+that follow the HA language (the `helios-eos` fork) use it for their own UI;
+older builds omit the key entirely. The event is re-sent when the language
+changes, e.g. after the HA language is switched and the options are saved.
 
 **`device`** - the Home Assistant device was renamed or moved to another area,
 so the clock can follow with its player name and voice context.

@@ -15,7 +15,7 @@ from homeassistant.helpers import issue_registry as ir
 from homeassistant.helpers.event import async_track_device_registry_updated_event
 
 from . import identity
-from .const import DOMAIN, PROTOCOL, PROTOCOLS, dashboard_path_for, valid_dashboard_path
+from .const import DOMAIN, PROTOCOL, PROTOCOLS, dashboard_path_for, release_if_idle, valid_dashboard_path
 from .coordinator import HeliosCoordinator
 
 
@@ -72,8 +72,7 @@ async def ws_connect(hass: HomeAssistant, connection, msg: dict) -> None:
                     return
                 section = await identity.async_refresh_music_section(hass, entry)
         finally:
-            if not lock.locked() and not lock._waiters:  # noqa: SLF001 - every exit path drops an idle lock
-                data["locks"].pop(installation_id, None)
+            release_if_idle(data["locks"], installation_id, lock)  # every exit path drops an idle lock
     coordinator: HeliosCoordinator | None = None
     for _ in range(50):  # a freshly created or reloaded entry finishes its setup shortly after the flow completes
         entry = owned()
@@ -95,7 +94,7 @@ async def ws_connect(hass: HomeAssistant, connection, msg: dict) -> None:
     coordinator.attach(connection, sub_id)
 
     device = dr.async_get(hass).async_get_device(identifiers={(DOMAIN, installation_id)})
-    _music_issue(hass, entry, section, device)
+    music_issue(hass, entry, section, device)
 
     @callback
     def device_updated(event) -> None:
@@ -125,7 +124,7 @@ async def ws_connect(hass: HomeAssistant, connection, msg: dict) -> None:
 
 
 @callback
-def _music_issue(hass: HomeAssistant, entry, section: dict | None, device) -> None:
+def music_issue(hass: HomeAssistant, entry, section: dict | None, device) -> None:
     """A clock without music while Music Assistant runs is a Repairs item, not just a log line (the add-on mints no token)."""
     issue_id = f"no_music_{entry.entry_id}"
     if section is None and identity.quiet_music_source(hass) is not None:

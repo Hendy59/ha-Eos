@@ -1,0 +1,136 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "EOS-Uhr koppeln"
+      }
+    },
+    "progress": {
+      "pair": "Halte auf der Uhr HELIOS gedrückt, wähle „Mit HA koppeln (Code)“ und gib den Code ein:\n\n**{code}**\n\nDer Code ist {minutes} Min. gültig."
+    },
+    "abort": {
+      "timeout": "Die Uhr hat sich nicht verbunden, während der Code gültig war.",
+      "reconfigured": "Die Uhr war bereits hinzugefügt; ihre Kopplung wurde aktualisiert."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Uhr-Optik",
+        "description": "Diese Einstellungen gelten nur für diese Uhr. Das Foto wird privat in Home Assistant gespeichert und von der Uhr abgerufen, sobald sie angemeldet ist.",
+        "data": {
+          "theme": "Farbschema",
+          "background": "Hintergrund",
+          "dim": "Foto abdunkeln",
+          "focus_x": "Horizontaler Fokuspunkt",
+          "focus_y": "Vertikaler Fokuspunkt",
+          "sendspin_url": "Sendspin-Adresse (leer = wird aus der Music-Assistant-Adresse abgeleitet)",
+          "diagnostics_url": "Diagnose-Adresse (leer = keine)",
+          "music_url": "Music-Assistant-Adresse für die Uhr (leer = die vom Server gemeldete Adresse)",
+          "music_token": "Music-Assistant-Token für die Uhr (leer = die Integration erstellt ein eigenes, was ein Music-Assistant-Add-on nicht erlaubt)",
+          "screensaver_mode": "Nachtuhr",
+          "idle_seconds": "Anzeige nach dieser Ruhezeit",
+          "dark_enter": "Dunkel unter diesem Helligkeitswert",
+          "dark_exit": "Hell ab diesem Helligkeitswert",
+          "notifications_block": "Eine sichtbare Warnkachel hält das Panel wach",
+          "photos": "Diashow in einem hellen Raum",
+          "photo_seconds": "Sekunden pro Foto",
+          "photo_dim": "Fotos in der Diashow abdunkeln"
+        }
+      },
+      "upload": {
+        "title": "Hintergrundfoto",
+        "description": "JPEG oder PNG bis 10 MB. Das Foto wird auf 1600x960 verkleinert und seine Metadaten (EXIF, GPS) werden entfernt.",
+        "data": {
+          "file": "Datei"
+        }
+      }
+    },
+    "error": {
+      "no_image": "Es ist kein Foto gespeichert – lade eines hoch oder wähle eine Farbe.",
+      "file_too_large": "Die Datei ist größer als 10 MB.",
+      "unsupported_format": "Nur JPEG und PNG werden unterstützt.",
+      "animated_image": "Animierte Bilder werden nicht unterstützt.",
+      "image_too_large": "Das Bild hat zu viele Pixel (max. 24 Millionen, 8192 pro Seite).",
+      "corrupt_image": "Das Bild konnte nicht gelesen werden.",
+      "invalid_url": "Die Music-Assistant-Adresse muss mit http:// oder https:// beginnen, die Sendspin-Adresse mit ws:// oder wss:// und die Diagnose-Adresse mit http:// oder https://.",
+      "dark_exit_too_low": "Der Helligkeitswert, der das Panel weckt, muss höher sein als der, der es abdunkelt: Der Abstand zwischen beiden verhindert, dass der Bildschirm flackert."
+    }
+  },
+  "selector": {
+    "screensaver_mode": {
+      "options": {
+        "off": "Nie",
+        "dark": "Nur in einem dunklen Raum",
+        "always": "Nach jeder Ruhephase"
+      }
+    },
+    "theme": {
+      "options": {
+        "warm_graphite": "Warmes Graphit",
+        "night_blue": "Nachtblau"
+      }
+    },
+    "background": {
+      "options": {
+        "solid": "Farbe des Farbschemas",
+        "keep": "Aktuelles Foto behalten",
+        "upload": "Neues Foto hochladen"
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "app_version": {
+        "name": "App-Version"
+      },
+      "voice_state": {
+        "name": "Sprachstatus"
+      },
+      "pad_version": {
+        "name": "Dock-Version"
+      },
+      "lux": {
+        "name": "Helligkeit"
+      }
+    },
+    "binary_sensor": {
+      "dock_connected": {
+        "name": "Dock verbunden"
+      },
+      "charging": {
+        "name": "Telefon lädt"
+      }
+    },
+    "light": {
+      "dock_lamp": {
+        "name": "Dock-Lampe"
+      }
+    },
+    "number": {
+      "device_volume": {
+        "name": "Gerätelautstärke"
+      }
+    },
+    "media_player": {
+      "clock_speaker": {
+        "name": "Uhr-Lautsprecher"
+      }
+    },
+    "assist_satellite": {
+      "satellite": {
+        "name": "Satellit"
+      }
+    }
+  },
+  "issues": {
+    "no_music": {
+      "title": "{name} hat keine Musik",
+      "description": "Music Assistant läuft, aber die Uhr **{name}** hat kein Music-Assistant-Token erhalten und kann daher keine Musik abspielen oder als Player erscheinen. Ein Music-Assistant-Add-on erlaubt es der Integration nicht, eines zu erstellen.\n\nErstelle in Music Assistant ein langlebiges Token und füge es in den Optionen dieser Uhr ein (Einstellungen > Geräte & Dienste > EOS > Konfigurieren) im Feld „Music-Assistant-Token“. Später gekoppelte Uhren übernehmen ein eingefügtes Token automatisch."
+    },
+    "app_update": {
+      "title": "Neue EOS-App-Version {latest} verfügbar",
+      "description": "Auf GitHub gibt es eine neuere EOS-App-Version **{latest}** als die neueste Uhr hier läuft (**{current}**). Öffne auf der Uhr das Menü und tippe auf den Update-Eintrag, um sie zu installieren."
+    }
+  }
+}

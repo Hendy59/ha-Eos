@@ -1,6 +1,6 @@
 # EOS - Home Assistant integration for the Lenovo Smart Clock 2
 
-Home Assistant side of [EOS](https://github.com/SychPL/helios), an Android
+Home Assistant side of [EOS](https://github.com/Hendy59/helios-eos), an Android
 app that turns a Lenovo Smart Clock 2 into a Home Assistant dashboard and voice
 satellite. The clock connects to Home Assistant over its own WebSocket
 connection; this integration registers the device and its entities, pairs the
@@ -166,7 +166,7 @@ only mutation path is `lovelace/config/save`, which Home Assistant gates to
 administrators.
 # EOS — Home Assistant Integration for Lenovo Smart Clock 2
 
-EOS is a custom [Home Assistant](https://www.home-assistant.io/) integration for the [Helios/EOS Android app](https://github.com/SychPL/helios). It turns a Lenovo Smart Clock 2 into a Home Assistant dashboard and voice satellite.
+EOS is a custom [Home Assistant](https://www.home-assistant.io/) integration for the [Helios/EOS Android app](https://github.com/Hendy59/helios-eos). It turns a Lenovo Smart Clock 2 into a Home Assistant dashboard and voice satellite.
 
 The clock communicates with Home Assistant through a local WebSocket connection. The integration handles pairing, device registration, entities, voice commands, dashboard configuration, appearance settings, and optional Music Assistant support.
 
@@ -336,9 +336,10 @@ The project uses Python 3.14 for development. GitHub Actions runs the Home Assis
 Translations are stored in:
 
 - `strings.json` — English
+- `translations/de.json` — German
 - `translations/pl.json` — Polish
 
-The Polish README is available as [README.pl.md](README.pl.md).
+The German README is available as [README.de.md](README.de.md), the Polish one as [README.pl.md](README.pl.md).
 
 ## License
 
