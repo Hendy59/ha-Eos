@@ -88,9 +88,16 @@ async def test_connection_payload_shape(hass):
         "dashboard_path": "helios-clock",
         "music_assistant": {"url": "http://ma:8095", "token": "clock-token", "sendspin_url": "ws://ma:8927/sendspin"},
         "diagnostics_url": None,
+        "language": hass.config.language,
     }
     payload = identity.connection_payload(hass, {"installation_id": INSTALLATION}, {"diagnostics_url": "http://pc:8757/x/events", "sendspin_url": "ws://other:8927/sendspin"})
     assert payload["music_assistant"] is None and payload["diagnostics_url"] == "http://pc:8757/x/events"
+
+
+async def test_connection_payload_carries_the_ha_language(hass):
+    hass.config.language = "de"
+    payload = identity.connection_payload(hass, {"installation_id": INSTALLATION}, {})
+    assert payload["language"] == "de"
 
 
 async def test_client_factory_matches_the_installed_music_assistant_client(hass):  # async: the aiohttp session needs a running loop

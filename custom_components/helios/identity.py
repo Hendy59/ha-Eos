@@ -280,4 +280,4 @@ def connection_payload(hass: HomeAssistant, entry_data: dict, options: dict) -> 
     if section:
         url = (options.get("music_url") or section["url"]).rstrip("/")  # the option wins when the server reports an address the clock cannot use
         music = {"url": url, "token": section["token"], "sendspin_url": options.get("sendspin_url") or sendspin_url_for(url)}
-    return {"type": "connection", "pipeline": preferred_pipeline(hass), "dashboard_path": dashboard_path_for(entry_data), "music_assistant": music, "diagnostics_url": options.get("diagnostics_url") or None}
+    return {"type": "connection", "pipeline": preferred_pipeline(hass), "dashboard_path": dashboard_path_for(entry_data), "music_assistant": music, "diagnostics_url": options.get("diagnostics_url") or None, "language": hass.config.language}
