@@ -127,6 +127,10 @@
     "no_music": {
       "title": "{name} bez muzyki",
       "description": "Music Assistant działa, ale zegar **{name}** nie dostał tokenu Music Assistant, więc nie odtwarza muzyki i nie pojawia się jako odtwarzacz. Dodatek Music Assistant nie pozwala integracji go utworzyć.\n\nW Music Assistant utwórz token długoterminowy i wklej go w opcjach tego zegara (Ustawienia > Urządzenia i usługi > EOS > Konfiguruj) w polu tokenu Music Assistant. Zegary parowane później przejmą wklejony token same."
+    },
+    "app_update": {
+      "title": "Dostępna nowa wersja aplikacji EOS {latest}",
+      "description": "Na GitHubie jest nowsza wersja aplikacji EOS **{latest}** niż najnowsza używana tutaj przez zegar (**{current}**). Na zegarze otwórz menu i dotknij wpisu aktualizacji, aby ją zainstalować."
     }
   }
 }

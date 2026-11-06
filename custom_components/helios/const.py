@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import re
 import time
 from urllib.parse import urlsplit
@@ -22,6 +23,8 @@ PANEL_URL_PATH = "helios"  # sidebar entry of the dashboard editor; the dashboar
 PANEL_STATIC_URL = "/helios_static"
 MUSIC_SECTION_REVISION = 2  # bumped whenever a stored MA section has to be re-minted (0.8.0/0.8.1 sections are unusable, SPEC 0.10 pkt 6.2)
 COMMAND_TIMEOUT_SECONDS = 10
+LATEST_APP_RELEASE_API = "https://api.github.com/repos/Hendy59/helios-eos/releases/latest"  # the clock app fork the in-app updater installs from
+APP_RELEASES_URL = "https://github.com/Hendy59/helios-eos/releases"
 
 _INSTALLATION_RE = re.compile(r"^[A-Za-z0-9-]{8,64}$")
 _CODE_RE = re.compile(r"^[0-9]{6}$")
@@ -87,9 +90,20 @@ def dashboard_path_for(entry_data: dict) -> str:
     return value if valid_dashboard_path(value) else DASHBOARD_PATH
 
 
+def version_tuple(version: str) -> tuple[int, ...]:
+    """The numeric parts of a version string for comparison: "v0.21.0-beta" -> (0, 21, 0)."""
+    return tuple(int(part) for part in re.findall(r"\d+", version))
+
+
+def release_if_idle(locks: dict, key: str, lock: asyncio.Lock) -> None:
+    """Drop an idle lock from the registry - every exit path of a transaction does this."""
+    if not lock.locked() and not lock._waiters:  # noqa: SLF001 - _waiters is the only way to see queued waiters
+        locks.pop(key, None)
+
+
 def new_domain_data() -> dict:
     """The hass.data[DOMAIN] shape; every entry point builds it the same way."""
-    return {"pairing": PairingRegistry(), "entries": {}, "locks": {}, "pairing_active": set(), "cancelled_users": {}, "views_registered": False, "ws_registered": False, "music_watcher": False, "music_watched": set()}
+    return {"pairing": PairingRegistry(), "entries": {}, "locks": {}, "pairing_active": set(), "cancelled_users": {}, "views_registered": False, "ws_registered": False, "music_watcher": False, "music_watched": set(), "update_checked": False}
 
 
 def parse_pair_request(body: object) -> dict | None:
